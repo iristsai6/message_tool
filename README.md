@@ -34,7 +34,7 @@
 
 ### 網頁版 (Web Version)
 
-直接下載專案中的 `index.html` 與 `icon.png` 放置於同一資料夾，雙擊 `[此處](https://iristsai6.github.io/message_tool/)` 即可使用。
+直接下載專案中的 `index.html` 與 `icon.png` 放置於同一資料夾，雙擊 [此處](https://iristsai6.github.io/message_tool/) 即可使用。
 
 ### 本地開發 (Desktop Python Version)
 
