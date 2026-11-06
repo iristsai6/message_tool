@@ -161,13 +161,15 @@
                 reader.readAsBinaryString(file);
             };
 
+            // --- 重寫後的固定表頭識別與對應邏輯 ---
             const reloadData = () => {
                 if (excelData.length === 0) {
                     alert("請先選擇 Excel 檔案！");
                     return;
                 }
                 
-                const bookScoreCol = `bookcount(${month})`;
+                // 根據當前選擇的月份動態組合 BookCount 欄位名稱（如 BookCount(11)）
+                const bookScoreCol = `BookCount(${month})`;
                 const defT = parseFloat(defaultTest) || 85.0;
                 const defB = parseFloat(defaultBook) || 6.0;
 
@@ -175,16 +177,16 @@
                 const pattern = /__(.*?)__|{(.*?)}/g;
 
                 excelData.forEach((row, index) => {
-                    const rowMap = {};
-                    Object.keys(row).forEach(k => rowMap[k.trim()] = row[k]);
+                    // 直接透過固定的表頭名稱精確讀取數值，並加上預設防呆
+                    const studentMec = row['studentMec'] !== undefined ? row['studentMec'] : (index + 1);
+                    const studentName = String(row['studentName'] || `學員 ${index + 1}`).trim();
+                    const englishName = String(row['englishName'] || '').trim();
+                    const studentClass = String(row['class'] || '預設班級').trim();
+                    
+                    const testScore = parseFloat(row['test_score']) || 0.0;
+                    const bookScore = parseFloat(row[bookScoreCol]) || 0.0;
 
-                    const rawTest = rowMap['test_score'] || rowMap['Test_Score'] || rowMap['testScore'];
-                    const testScore = parseFloat(rawTest) || 0.0;
-
-                    const rawBook = rowMap[bookScoreCol] || rowMap[`BookCount(${month})`];
-                    const bookScore = parseFloat(rawBook) || 0.0;
-
-                    const studentClass = String(rowMap['class'] || rowMap['Class'] || '預設班級').trim();
+                    // 取得各班級標準
                     const clsStd = standards[studentClass] || {};
                     const passTestScore = clsStd.test !== undefined ? clsStd.test : defT;
                     const passBookScore = clsStd.book !== undefined ? clsStd.book : defB;
@@ -212,22 +214,10 @@
                     let currentText = templateText;
                     currentText = currentText.replace(pattern, (match, p1, p2) => {
                         let varName = (p1 || p2).trim();
+                        // 若模板寫的是 {BookCount} 或變數包含 bookcount，則替換為當月對應的 BookCount(月份) 欄位數值
                         let targetCol = varName.toLowerCase().includes('bookcount') ? bookScoreCol : varName;
-                        return rowMap[targetCol] !== undefined ? String(rowMap[targetCol]) : (rowMap[varName] !== undefined ? String(rowMap[varName]) : '');
+                        return row[targetCol] !== undefined ? String(row[targetCol]) : (row[varName] !== undefined ? String(row[varName]) : '');
                     });
-
-                    const studentName = String(
-                        rowMap['studentname'] || rowMap['StudentName'] || 
-                        rowMap['姓名'] || rowMap['學生姓名'] || 
-                        `學員 ${index + 1}`
-                    ).trim();
-
-                    const studentMec = rowMap['studentmec'] || rowMap['StudentMec'] || rowMap['學號'] || (index + 1);
-                    
-                    const englishName = String(
-                        rowMap['englishname'] || rowMap['EnglishName'] || 
-                        rowMap['英文名字'] || rowMap['英文名'] || ''
-                    ).trim();
 
                     newResults.push({
                         studentMec,
@@ -440,7 +430,7 @@
                                     onClick={() => setShowHelpModal(true)}
                                     className="w-full flex items-center justify-center gap-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/50 font-semibold py-2.5 rounded-lg transition-colors mt-2"
                                 >
-                                    🚨 操作說明與常見問題 Q&A
+                                    🚨 操作說明與固定表頭 Q&A
                                 </button>
                             </div>
                         </div>
@@ -548,28 +538,31 @@
                         <HistoryModal onClose={() => setShowHistory(false)} />
                     )}
 
-                    {/* 🚨 說明與常見問題 Q&A Modal */}
+                    {/* 🚨 說明與固定表頭 Q&A Modal */}
                     {showHelpModal && (
                         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
                             <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
                                 <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
-                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">🚨 操作說明與常見問題除錯</h2>
+                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">🚨 固定表頭規格與除錯 Q&A</h2>
                                     <button onClick={() => setShowHelpModal(false)} className="text-slate-400 hover:text-white"><XIcon size={24} /></button>
                                 </div>
                                 
                                 <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 max-h-[60vh] text-sm text-slate-300">
-                                    <h3 className="font-bold text-amber-400">📊 1. Excel 欄位對照說明</h3>
-                                    <p>• <b>姓名欄位</b>：請命名為 <code>studentname</code>、<code>StudentName</code>、<code>姓名</code> 或 <code>學生姓名</code>[cite: 1]</p>
-                                    <p>• <b>班級欄位</b>：請命名為 <code>class</code> 或 <code>Class</code>[cite: 1]</p>
-                                    <p>• <b>小考成績</b>：請命名為 <code>test_score</code>、<code>Test_Score</code> 或 <code>testScore</code>[cite: 1]</p>
-                                    <p>• <b>讀本分數</b>：請命名為 <code>bookcount(月份)</code>（例如 <code>bookcount(11)</code>）[cite: 1]</p>
+                                    <h3 className="font-bold text-amber-400">📊 1. 固定的 Excel 表頭規範</h3>
+                                    <p>您的匯入表頭已固定為以下英文欄位，系統將直接進行精確對應：</p>
+                                    <p>• <code>studentMec</code>：學員項次 / 學號</p>
+                                    <p>• <code>studentName</code>：學員中文姓名</p>
+                                    <p>• <code>englishName</code>：學員英文名字</p>
+                                    <p>• <code>class</code>：班級代號（如 150TH, 200TH）</p>
+                                    <p>• <code>test_score</code>：小考成績</p>
+                                    <p>• <code>BookCount(月份)</code>：動態讀本分數（例如 <code>BookCount(11)</code>）</p>
 
                                     <hr className="border-slate-700 my-2"/>
 
-                                    <h3 className="font-bold text-rose-400">❓ 2. 常見問題 Q&A 與除錯</h3>
-                                    <p><b>Q: 名字顯示「學員 1」？</b><br/>A: 代表 Excel 找不到姓名欄位，請檢查第一列標題是否正確。</p>
-                                    <p><b>Q: 為什麼找不到未達標學生？</b><br/>A: 可能是學生分數皆已達標，若需檢視全部名單請勾選左側「啟用群發模式」。</p>
-                                    <p><b>Q: 載入 Excel 失敗？</b><br/>A: 請檢查網路連線是否正常，或重新整理網頁後再試一次。</p>
+                                    <h3 className="font-bold text-rose-400">❓ 2. 常見問題 Q&A</h3>
+                                    <p><b>Q: 為什麼資料讀進來變成預設值？</b><br/>A: 請確認上傳的 Excel 第一列標題是否完全符合上述固定英文名稱（注意大小寫須相符）。</p>
+                                    <p><b>Q: 讀本分數抓不到數值？</b><br/>A: 請檢查左側「對應讀本月份」選擇的月份是否與 Excel 中的欄位括號數字一致（例如選 11 月，Excel 欄位需為 <code>BookCount(11)</code>）。</p>
+                                    <p><b>Q: 載入 Excel 失敗？</b><br/>A: 請確認網路連線正常以載入 SheetJS 套件，或重新整理頁面後重試。</p>
                                 </div>
 
                                 <div className="p-4 border-t border-slate-700 flex justify-end bg-slate-900">
