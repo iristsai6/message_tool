@@ -107,16 +107,23 @@
             const [showHistory, setShowHistory] = useState(false);
             const [showHelpModal, setShowHelpModal] = useState(false);
 
+            // --- 欄寬自由調整狀態 (將 action 移至第一欄，寬度預設 120px) ---
             const [colWidths, setColWidths] = useState({
+                action: 120,
                 mec: 110,
                 class: 90,
                 name: 140,
                 score: 200,
-                preview: 350,
-                action: 120
+                preview: 350
             });
 
+            // --- 記錄每一列是否展開 (預設全展開或收合可自訂，此處預設全展開以防漏看) ---
+            const [expandedRows, setExpandedRows] = useState({});
             const [rowHeights, setRowHeights] = useState({});
+
+            const toggleRowExpand = (idx) => {
+                setExpandedRows(prev => ({ ...prev, [idx]: !prev[idx] }));
+            };
 
             const handleColResize = (e, key) => {
                 const startX = e.clientX;
@@ -139,11 +146,11 @@
 
             const handleRowResize = (e, index) => {
                 const startY = e.clientY;
-                const currentHeight = rowHeights[index] || 50;
+                const currentHeight = rowHeights[index] || 80;
 
                 const onMouseMove = (moveEvent) => {
                     const delta = moveEvent.clientY - startY;
-                    const newHeight = Math.max(35, currentHeight + delta);
+                    const newHeight = Math.max(45, currentHeight + delta);
                     setRowHeights(prev => ({ ...prev, [index]: newHeight }));
                 };
 
@@ -271,6 +278,7 @@
 
                 setResults(newResults);
                 setRowHeights({});
+                setExpandedRows({});
             };
 
             useEffect(() => {
@@ -345,7 +353,7 @@
                 return "2. 未達標學生名單與即時確認區：";
             }, [isBroadcast, filterTest, filterBook]);
 
-            const totalTableWidth = colWidths.mec + colWidths.class + colWidths.name + colWidths.score + colWidths.preview + colWidths.action;
+            const totalTableWidth = colWidths.action + colWidths.mec + colWidths.class + colWidths.name + colWidths.score + colWidths.preview;
 
             return (
                 <div className="flex-1 flex flex-col p-4 max-w-full">
@@ -469,17 +477,22 @@
                             </div>
                         </div>
 
-                        {/* 右側結果表格 (具備獨立捲動容器與自適應寬度) */}
+                        {/* 右側結果表格 (快速操作移至第一欄，預覽支援可折疊) */}
                         <div className="flex-1 flex flex-col bg-slate-800 border border-slate-700 rounded-xl overflow-hidden min-h-[400px]">
                             <div className="p-3.5 border-b border-slate-700 font-bold text-white bg-slate-800/50 text-sm flex justify-between items-center shrink-0">
                                 <span>{rightTitle}</span>
-                                <span className="text-xs font-normal text-slate-400">💡 提示：支援雙向捲動與欄寬/列高拖曳</span>
+                                <span className="text-xs font-normal text-slate-400">💡 提示：「快速操作」已移至第一欄，預覽文字支援收合與展開</span>
                             </div>
                             
                             <div className="flex-1 overflow-auto custom-scrollbar w-full">
                                 <table className="text-left border-collapse text-sm table-fixed" style={{ width: `${totalTableWidth}px`, minWidth: '100%' }}>
                                     <thead className="sticky top-0 bg-slate-900 border-b border-slate-700 shadow-md z-20">
                                         <tr>
+                                            {/* 第一欄：快速操作 */}
+                                            <th className="py-2.5 px-3 text-center text-slate-400 font-medium relative select-none" style={{ width: `${colWidths.action}px` }}>
+                                                快速操作
+                                                <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'action')} title="拖曳調整欄寬" />
+                                            </th>
                                             <th className="py-2.5 px-3 text-center text-slate-400 font-medium relative select-none" style={{ width: `${colWidths.mec}px` }}>
                                                 學號/項次
                                                 <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'mec')} title="拖曳調整欄寬" />
@@ -497,11 +510,8 @@
                                                 <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'score')} title="拖曳調整欄寬" />
                                             </th>
                                             <th className="py-2.5 px-3 text-slate-400 font-medium relative select-none" style={{ width: `${colWidths.preview}px` }}>
-                                                生成預覽內容
+                                                生成預覽內容 (可折疊)
                                                 <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'preview')} title="拖曳調整欄寬" />
-                                            </th>
-                                            <th className="py-2.5 px-3 text-center text-slate-400 font-medium" style={{ width: `${colWidths.action}px` }}>
-                                                快速操作
                                             </th>
                                         </tr>
                                     </thead>
@@ -525,35 +535,17 @@
                                                     statusStr = `[${reasonDesc}] 單字:${item.testScore}/${item.passTestScore} | 書:${item.bookScore}/${item.passBookScore}`;
                                                 }
 
+                                                const isExpanded = !!expandedRows[idx];
                                                 const customHeight = rowHeights[idx] ? `${rowHeights[idx]}px` : 'auto';
 
                                                 return (
                                                     <tr 
                                                         key={item.studentMec + '-' + idx} 
                                                         style={{ height: customHeight }}
-                                                        className={`transition-colors relative ${item.processed ? 'bg-emerald-900/20' : 'hover:bg-slate-700/30'}`}
+                                                        className={`transition-colors relative align-top ${item.processed ? 'bg-emerald-900/20' : 'hover:bg-slate-700/30'}`}
                                                     >
-                                                        <td className="py-2 px-3 text-center text-slate-400 text-xs font-mono truncate relative" style={{ width: `${colWidths.mec}px` }}>
-                                                            {item.studentMec}
-                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
-                                                        </td>
-                                                        <td className="py-2 px-3 font-semibold text-amber-400 text-xs truncate relative" style={{ width: `${colWidths.class}px` }}>
-                                                            {item.studentClass}
-                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
-                                                        </td>
-                                                        <td className="py-2 px-3 font-bold text-slate-200 text-xs truncate relative" style={{ width: `${colWidths.name}px` }}>
-                                                            {item.studentName} {item.englishName ? `(${item.englishName})` : ''}
-                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
-                                                        </td>
-                                                        <td className="py-2 px-3 text-slate-300 text-xs leading-relaxed relative" style={{ width: `${colWidths.score}px` }}>
-                                                            {statusStr}
-                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
-                                                        </td>
-                                                        <td className="py-2 px-3 text-slate-300 relative" style={{ width: `${colWidths.preview}px` }}>
-                                                            <div className="h-full overflow-y-auto text-xs opacity-90 whitespace-pre-wrap custom-scrollbar pr-1">{item.generatedText}</div>
-                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
-                                                        </td>
-                                                        <td className="py-2 px-3 text-center relative" style={{ width: `${colWidths.action}px` }}>
+                                                        {/* 第一欄：快速操作按鈕 */}
+                                                        <td className="py-2.5 px-3 text-center relative" style={{ width: `${colWidths.action}px` }}>
                                                             {item.processed ? (
                                                                 <button className="w-full flex items-center justify-center gap-1 bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 py-1 rounded text-xs font-bold pointer-events-none">
                                                                     <CheckCircleIcon size={14} /> 已傳送
@@ -561,11 +553,45 @@
                                                             ) : (
                                                                 <button 
                                                                     onClick={() => handleCopy(idx)}
-                                                                    className="w-full flex items-center justify-center gap-1 bg-blue-500 text-white py-1 rounded text-xs font-bold hover:bg-blue-600 transition-colors shadow-sm"
+                                                                    className="w-full flex items-center justify-center gap-1 bg-blue-500 text-white py-1.5 rounded text-xs font-bold hover:bg-blue-600 transition-colors shadow-sm"
                                                                 >
                                                                     <CopyIcon size={14} /> 複製訊息
                                                                 </button>
                                                             )}
+                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
+                                                        </td>
+
+                                                        <td className="py-2.5 px-3 text-center text-slate-400 text-xs font-mono truncate relative" style={{ width: `${colWidths.mec}px` }}>
+                                                            {item.studentMec}
+                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
+                                                        </td>
+
+                                                        <td className="py-2.5 px-3 font-semibold text-amber-400 text-xs truncate relative" style={{ width: `${colWidths.class}px` }}>
+                                                            {item.studentClass}
+                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
+                                                        </td>
+
+                                                        <td className="py-2.5 px-3 font-bold text-slate-200 text-xs truncate relative" style={{ width: `${colWidths.name}px` }}>
+                                                            {item.studentName} {item.englishName ? `(${item.englishName})` : ''}
+                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
+                                                        </td>
+
+                                                        <td className="py-2.5 px-3 text-slate-300 text-xs leading-relaxed relative" style={{ width: `${colWidths.score}px` }}>
+                                                            {statusStr}
+                                                            <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
+                                                        </td>
+
+                                                        {/* 生成預覽內容 (可折疊) */}
+                                                        <td className="py-2.5 px-3 text-slate-300 relative" style={{ width: `${colWidths.preview}px` }}>
+                                                            <div className={`text-xs opacity-90 whitespace-pre-wrap custom-scrollbar pr-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                                                                {item.generatedText}
+                                                            </div>
+                                                            <button 
+                                                                onClick={() => toggleRowExpand(idx)}
+                                                                className="mt-1.5 text-xs text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2 inline-block focus:outline-none"
+                                                            >
+                                                                {isExpanded ? "▲ 收合內容" : "▼ 展開完整內容"}
+                                                            </button>
                                                             <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
                                                         </td>
                                                     </tr>
@@ -618,15 +644,10 @@
                                 </div>
                                 
                                 <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 max-h-[60vh] text-sm text-slate-300">
-                                    <h3 className="font-bold text-amber-400">📱 手機與視窗縮小滑動說明</h3>
-                                    <p>• 本次更新已解除全頁面的固定高度捲動限制，並為表格容器加上了動態的總寬度計算與捲動支援。</p>
-                                    <p>• 在行動裝置或將視窗縮小時，您可以直接在表格區域內**左右滑動**以檢視完整欄位，或**上下滑動**瀏覽學員資料。</p>
-
-                                    <hr className="border-slate-700 my-2"/>
-
-                                    <h3 className="font-bold text-amber-400">📏 自由調整欄寬與列高說明</h3>
-                                    <p>• <b>調整欄寬</b>：將滑鼠移到表頭的右側邊緣按住左右拖曳。</p>
-                                    <p>• <b>調整列高</b>：將滑鼠移到任一學員列的最下方邊緣按住上下拖曳。</p>
+                                    <h3 className="font-bold text-amber-400">✨ 本次更新亮點</h3>
+                                    <p>• <b>快速操作移至第一欄</b>：按鈕固定在最左側，點擊複製更快速。</p>
+                                    <p>• <b>生成預覽內容可折疊</b>：每列下方皆有「展開完整內容 / 收合內容」按鈕，不需擔心長篇訊息被卡死或侷限。</p>
+                                    <p>• <b>自由調整欄寬與列高</b>：持續支援表頭右側拉寬與列下方拉高。</p>
                                 </div>
 
                                 <div className="p-4 border-t border-slate-700 flex justify-end bg-slate-900">
