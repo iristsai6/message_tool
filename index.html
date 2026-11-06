@@ -37,7 +37,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- SVG 圖示元件 (取代原本的 lucide-react) ---
+        // --- SVG 圖示元件 ---
         const SettingsIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>);
         const RotateCwIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>);
         const UploadIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>);
@@ -56,9 +56,9 @@
         };
 
         const defaultTemplates = {
-            "預設英文學習狀況回報": "家長您好，和您分享孩子近期的英文學習狀況。\n\n{name}最近三次小考成績從 70 分、80 分進步到{test_score} 分，單字掌握比之前穩定；課堂上也開始能用完整句子回答問題。\n\n目前需要加強的是\n\n🔺 {加強項目}。\n🔺 閱讀提升一個level的小說。\n🔺 本班講師規定目標，目前累積到{book_score}分！\n\n另外，本週有一項錄音尚未繳交。\n📍老師檢查方式會先確認完成狀況，再檢查發音與流暢度。\n\n我們已與講師確認，接下來會先帶孩子示範一次故事摘要，與朗讀。請孩子於下週上課前完成小說閱讀及補交錄音。",
-            "群發訊息": "家長您好，提醒您{name}本週須參加{class}大會考唷！逾時十分鐘則不予入場考試!!",
-            "短版提醒通知": "家長您好，提醒您孩子本週英文小考成績為 {test_score} 分，小說分數為 {book_score} 分，尚未達到班級標準，再請協助提醒孩子完成進度與複習唷！"
+            "預設英文學習狀況回報": "家長您好，和您分享孩子近期的英文學習狀況。\n\n{studentName}最近三次小考成績從 70 分、80 分進步到{test_score} 分，單字掌握比之前穩定；課堂上也開始能用完整句子回答問題。\n\n目前需要加強的是\n\n🔺 {加強項目}。\n🔺 閱讀提升一個level的小說。\n🔺 本班講師規定目標，目前累積到{BookCount}分！\n\n另外，本週有一項錄音尚未繳交。\n📍老師檢查方式會先確認完成狀況，再檢查發音與流暢度。\n\n我們已與講師確認，接下來會先帶孩子示範一次故事摘要，與朗讀。請孩子於下週上課前完成小說閱讀及補交錄音。",
+            "群發訊息": "家長您好，提醒您{studentName}本週須參加{class}大會考唷！逾時十分鐘則不予入場考試!!",
+            "短版提醒通知": "家長您好，提醒您孩子本週英文小考成績為 {test_score} 分，小說分數為 {BookCount} 分，尚未達到班級標準，再請協助提醒孩子完成進度與複習唷！"
         };
 
         // --- 工具函式 ---
@@ -93,7 +93,7 @@
             const [currentTemplateName, setCurrentTemplateName] = useState("預設英文學習狀況回報");
             const [templateText, setTemplateText] = useState(defaultTemplates["預設英文學習狀況回報"]);
             
-            const [month, setMonth] = useState("10");
+            const [month, setMonth] = useState("11");
             const [defaultTest, setDefaultTest] = useState("85");
             const [defaultBook, setDefaultBook] = useState("6");
             
@@ -166,7 +166,8 @@
                     return;
                 }
                 
-                const bookScoreCol = `book_score(${month})`.toLowerCase();
+                // 動態對應選擇月份的 BookCount(月份)
+                const bookScoreCol = `bookcount(${month})`.toLowerCase();
                 const defT = parseFloat(defaultTest) || 85.0;
                 const defB = parseFloat(defaultBook) || 6.0;
 
@@ -174,7 +175,7 @@
                 const pattern = /__(.*?)__|{(.*?)}/g;
 
                 excelData.forEach((row, index) => {
-                    // 轉小寫欄位
+                    // 轉小寫欄位以便統一處理
                     const lowerRow = {};
                     Object.keys(row).forEach(k => lowerRow[k.toLowerCase().trim()] = row[k]);
 
@@ -212,16 +213,21 @@
                     let currentText = templateText;
                     currentText = currentText.replace(pattern, (match, p1, p2) => {
                         let varName = (p1 || p2).trim().toLowerCase();
-                        let targetCol = varName.includes('book_score') ? bookScoreCol : varName;
+                        // 支援模板填寫 {BookCount} 或 {BookCount(11)} 等動態擷取
+                        let targetCol = varName.includes('bookcount') ? bookScoreCol : varName;
                         return lowerRow[targetCol] !== undefined ? String(lowerRow[targetCol]) : '';
                     });
 
-                    const studentName = String(lowerRow['name'] || `學員 ${index + 1}`).trim();
+                    // 擷取指定欄位變數
+                    const studentName = String(lowerRow['studentname'] || `學員 ${index + 1}`).trim();
+                    const studentMec = lowerRow['studentmec'] || (index + 1);
+                    const englishName = lowerRow['englishname'] || '';
 
                     newResults.push({
-                        id: index + 1,
+                        studentMec,
                         studentClass,
                         studentName,
+                        englishName,
                         testScore, passTestScore,
                         bookScore, passBookScore,
                         isTestPassed, isBookPassed,
@@ -243,10 +249,8 @@
             // --- 複製文字與備用方案 (Fallback) ---
             const executeCopy = async (text) => {
                 try {
-                    // 嘗試使用現代 Clipboard API
                     await navigator.clipboard.writeText(text);
                 } catch (error) {
-                    // 被阻擋或不支援時，使用傳統 textarea 備用方案
                     console.warn("Clipboard API blocked, using fallback:", error);
                     const textArea = document.createElement("textarea");
                     textArea.value = text;
@@ -401,7 +405,7 @@
                                     >
                                         <UploadIcon size={18} /> 選擇 Excel
                                     </button>
-                                    <input type="file" accept=".xlsx, .xls, .csv,.json" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                                    <input type="file" accept=".xlsx, .xls" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
                                     
                                     <button 
                                         onClick={reloadData}
@@ -434,12 +438,12 @@
                             </div>
                             
                             <div className="flex-1 overflow-auto custom-scrollbar">
-                                <table className="w-full text-left border-collapse text-sm">
-                                    <thead className="sticky top-0 bg-slate-900 border-b border-slate-700 shadow-md">
+                                <table className="w-full text-left border-collapse text-sm min-w-[800px] md:min-w-full">
+                                    <thead className="sticky top-0 bg-slate-900 border-b border-slate-700 shadow-md z-10">
                                         <tr>
-                                            <th className="p-3 w-16 text-center text-slate-400">項次</th>
+                                            <th className="p-3 w-16 text-center text-slate-400">學號/項次</th>
                                             <th className="p-3 w-24 text-slate-400">班級</th>
-                                            <th className="p-3 w-32 text-slate-400">學員姓名</th>
+                                            <th className="p-3 w-40 text-slate-400">學員姓名 (英)</th>
                                             <th className="p-3 w-64 text-slate-400">小考/小說成績</th>
                                             <th className="p-3 text-slate-400">生成預覽內容</th>
                                             <th className="p-3 w-32 text-center text-slate-400">快速操作</th>
@@ -467,10 +471,12 @@
                                                 }
 
                                                 return (
-                                                    <tr key={idx} className={`transition-colors ${item.processed ? 'bg-emerald-900/20' : 'hover:bg-slate-700/30'}`}>
-                                                        <td className="p-3 text-center text-slate-400">{item.id}</td>
+                                                    <tr key={item.studentMec + '-' + idx} className={`transition-colors ${item.processed ? 'bg-emerald-900/20' : 'hover:bg-slate-700/30'}`}>
+                                                        <td className="p-3 text-center text-slate-400">{item.studentMec}</td>
                                                         <td className="p-3 font-semibold text-amber-400">{item.studentClass}</td>
-                                                        <td className="p-3 font-bold text-slate-200">{item.studentName}</td>
+                                                        <td className="p-3 font-bold text-slate-200">
+                                                            {item.studentName} {item.englishName ? `(${item.englishName})` : ''}
+                                                        </td>
                                                         <td className="p-3 text-slate-300 text-xs leading-relaxed">{statusStr}</td>
                                                         <td className="p-3 text-slate-300">
                                                             <div className="line-clamp-3 text-xs opacity-90 whitespace-pre-wrap">{item.generatedText}</div>
@@ -586,11 +592,11 @@
 
                             <hr className="border-slate-700"/>
 
-                            {/* 模板管理 */}
+                            {/* 模板管理 (已套用 RWD) */}
                             <div className="flex flex-col gap-3">
                                 <label className="block font-bold text-slate-200">📝 訊息模板管理區：</label>
-                                <div className="flex gap-4 h-64">
-                                    <div className="w-1/3 border border-slate-700 rounded-lg overflow-y-auto custom-scrollbar bg-slate-900/50 p-2">
+                                <div className="flex flex-col md:flex-row gap-4 h-auto md:h-64">
+                                    <div className="w-full md:w-1/3 h-32 md:h-auto border border-slate-700 rounded-lg overflow-y-auto custom-scrollbar bg-slate-900/50 p-2">
                                         {Object.keys(localTpls).map(name => (
                                             <div 
                                                 key={name} 
@@ -601,7 +607,7 @@
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="w-2/3 flex flex-col gap-2">
+                                    <div className="w-full md:w-2/3 flex flex-col gap-2 mt-4 md:mt-0">
                                         <input 
                                             type="text" placeholder="新模板名稱" 
                                             className="bg-slate-900 border border-slate-600 rounded-lg p-2 text-slate-200 text-sm outline-none focus:border-amber-500"
@@ -609,7 +615,7 @@
                                         />
                                         <textarea 
                                             placeholder="在此輸入模板內容..." 
-                                            className="flex-1 bg-slate-900 border border-slate-600 rounded-lg p-3 text-slate-200 text-sm resize-none outline-none focus:border-amber-500 custom-scrollbar"
+                                            className="flex-1 min-h-[120px] bg-slate-900 border border-slate-600 rounded-lg p-3 text-slate-200 text-sm resize-none outline-none focus:border-amber-500 custom-scrollbar"
                                             value={tplContentInput} onChange={e => setTplContentInput(e.target.value)}
                                         />
                                         <div className="flex gap-2 mt-1">
@@ -630,7 +636,7 @@
             );
         }
 
-        // --- 歷史紀錄檢視對話框組件 ---
+        // --- 歷史紀錄檢視對話框組件 (已套用 RWD) ---
         function HistoryModal({ onClose }) {
             const [history, setHistory] = useState([]);
             const [selectedIdx, setSelectedIdx] = useState(null);
@@ -652,7 +658,7 @@
                 detailStr = `【儲存時間】\n${selectedRecord.date}\n\n【儲存的模板內容】\n${selectedRecord.template}\n\n${"=".repeat(40)}\n【學員生成紀錄】\n`;
                 selectedRecord.records.forEach(rec => {
                     const statusStr = rec.processed ? "[已處理]" : "[未處理]";
-                    detailStr += `${statusStr} 班級: ${rec.studentClass || 'N/A'} | 姓名: ${rec.studentName || 'N/A'} | 小考成績: ${rec.testScore || 0} | 小說分數: ${rec.bookScore || 0}\n`;
+                    detailStr += `${statusStr} 學號: ${rec.studentMec || 'N/A'} | 班級: ${rec.studentClass || 'N/A'} | 姓名: ${rec.studentName || 'N/A'} | 小考成績: ${rec.testScore || 0} | 小說分數: ${rec.bookScore || 0}\n`;
                     detailStr += `內容: ${rec.generatedText}\n${"-".repeat(30)}\n`;
                 });
             }
@@ -665,9 +671,9 @@
                             <button onClick={onClose} className="text-slate-400 hover:text-white"><XIcon size={24} /></button>
                         </div>
                         
-                        <div className="flex-1 flex overflow-hidden">
+                        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                             {/* 左側列表 */}
-                            <div className="w-1/3 border-r border-slate-700 overflow-y-auto custom-scrollbar p-3 bg-slate-900/30">
+                            <div className="w-full md:w-1/3 h-1/3 md:h-full border-b md:border-b-0 md:border-r border-slate-700 overflow-y-auto custom-scrollbar p-3 bg-slate-900/30">
                                 <div className="font-bold text-slate-300 mb-3 ml-1 text-sm">已儲存的歷史批次紀錄：</div>
                                 {history.length === 0 ? (
                                     <div className="text-slate-500 text-sm p-2">尚無歷史紀錄。</div>
@@ -687,7 +693,7 @@
                             </div>
                             
                             {/* 右側內容 */}
-                            <div className="w-2/3 p-4 bg-slate-900">
+                            <div className="w-full md:w-2/3 h-2/3 md:h-full p-4 bg-slate-900">
                                 <textarea 
                                     readOnly
                                     className="w-full h-full bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-slate-300 text-sm font-mono resize-none outline-none custom-scrollbar whitespace-pre-wrap"
