@@ -1,6 +1,6 @@
 # 🍎 [批次模板生成小工具](https://iristsai6.github.io/message_tool/)
 
-![Version](https://img.shields.io/badge/version-2.0.0-amber)
+![Version](https://img.shields.io/badge/version-1.0.0-amber)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Desktop-slate)
 
