@@ -197,15 +197,15 @@
 
                 const reader = new FileReader();
                 reader.onload = (evt) => {
-                    if (!window.) {
+                    if (!window.XLSX) {
                         alert("Excel 處理模組載入失敗，請檢查網路連線。");
                         return;
                     }
                     const bstr = evt.target.result;
-                    const wb = window..read(bstr, { type: 'binary' });
+                    const wb = window.XLSX.read(bstr, { type: 'binary' });
                     const wsname = wb.SheetNames[0];
                     const ws = wb.Sheets[wsname];
-                    const data = window..utils.sheet_to_json(ws);
+                    const data = window.XLSX.utils.sheet_to_json(ws);
                     setExcelData(data);
                 };
                 reader.readAsBinaryString(file);
@@ -340,7 +340,6 @@
                         records: results
                     };
                     
-                    // 僅保留最近 20 筆歷史紀錄，避免佔滿 LocalStorage
                     const updatedHistory = [newRecord, ...existingHistory].slice(0, 20);
                     
                     localStorage.setItem('app_history', JSON.stringify(updatedHistory));
@@ -449,7 +448,7 @@
                                     >
                                         <UploadIcon size={18} /> 選擇 Excel
                                     </button>
-                                    <input type="file" accept="., .xls, .csv, .json" className="hidden" ref={fileInputRef} onChange={handleFileUpload} /> 
+                                    <input type="file" accept=".xlsx, .xls, .csv, .json" className="hidden" ref={fileInputRef} onChange={handleFileUpload} /> 
                                     
                                     <button 
                                         onClick={reloadData}
