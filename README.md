@@ -1,6 +1,6 @@
 # 🍎 [批次模板生成小工具](https://iristsai6.github.io/message_tool/)
 
-![Version](https://img.shields.io/badge/version-1.0.0-amber)
+![Version](https://img.shields.io/badge/version-1.1.0-amber)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Desktop-slate)
 
@@ -9,18 +9,22 @@
 
 ---
 
-## ✨ 核心特色與功能
+## ✨ 核心特色與功能 (v1.1.0 新功能)
 
 - **📊 Excel 智慧解析與動態月份對應**：
-  - 支援上傳 `.xlsx` 與 `.xls` 檔案。
-  - 動態對應 1~12 月讀本小說成績（例如自動比對 `book_score(10)` 欄位）。
+  - 支援上傳 `.xlsx` 、 `.xls`、`.csv` 和 `.json`檔案。
+  - 動態對應 1~12 月讀本小說成績（自動比對 `BookCount(月份)` 欄位）。
 - **🎯 彈性過濾與條件篩選**：
   - **預設未達標**：自動比對小考與小說成績是否符合班級標準。
   - **獨立條件過濾**：可勾選「僅篩選小考未達標」或「僅篩選小說未達標」。
   - **全體群發模式**：一鍵開啟群發，忽略成績標準，直接讀取班級與姓名生成活動提醒通知。
-- **📋 傳送狀態即時追蹤**：
-  - 點擊「複製訊息」按鈕後，會自動將套用模板後的內容寫入剪貼簿。
-  - 複製後按鈕自動變更為 **「已傳送 ✔」** 並轉為綠色背景，避免漏發或重複發送。
+- **🖱️ 互動式表格自由調整與滑動優化 (v1.1.0 新增)**：
+  - **自由調整欄寬與列高**：將滑鼠移至表頭右側邊緣或資料列下方邊緣，按住即可隨心所欲拖曳調整尺寸。
+  - **雙向捲動與行動裝置支援**：完美支援桌機與行動裝置的自適應佈局，視窗縮小或手機瀏覽時可順暢滑動。
+  - **生成內容可折疊**：預覽內容支援「展開/收合」按鈕，長篇訊息檢視更清爽不佔空間。
+- **📋 傳送狀態即時追蹤與人性化排版**：
+  - **快速操作優先**：將「快速操作」按鈕欄位調整至表格最左側第一欄，點擊複製更直覺、不需向右捲動。
+  - 點擊「複製訊息」後自動轉為 **「已傳送 ✔」** 綠色標記，避免漏發或重複發送。
 - **💾 歷史紀錄與設定持久化**：
   - 支援各班級標準自訂（例如：`150TH:85/6, 200TH:80/4`）。
   - 內建歷史紀錄面板，可隨時回溯過去發送的訊息與套用模板。
@@ -40,25 +44,33 @@
 
 1. **複製專案庫 (Clone Repository)**：
    ```bash
-   git clone https://github.com/your-username/smart-batch-message-generator.git
+   git clone [https://github.com/your-username/smart-batch-message-generator.git](https://github.com/your-username/smart-batch-message-generator.git)
    cd smart-batch-message-generator
-   ```
+
+```
 
 2. **安裝所需 Python 套件**：
-   ```bash
-   pip install PyQt6 pandas openpyxl
-   ```
+```bash
+pip install PyQt6 pandas openpyxl
+
+```
+
 
 3. **啟動小工具**：
-   ```bash
-   python app.py
-   ```
+```bash
+python app.py
+
+```
+
 
 4. **打包為 `.exe` 執行檔 (使用 PyInstaller)**：
-   ```bash
-   pyinstaller --noconsole --onefile --icon=icon.png app.py
-   ```
-   打包完成後，可於 `dist/` 資料夾找到 `app.exe`。
+```bash
+pyinstaller --noconsole --onefile --icon=icon.png app.py
+
+```
+
+
+打包完成後，可於 `dist/` 資料夾找到 `app.exe`。
 
 ---
 
@@ -66,39 +78,46 @@
 
 小工具能自動相容各種欄位大小寫，建議欄位如下：
 
-| id | class | name | test_score | book_score(10) | 加強項目 |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 123 | 150TH | 周傑倫 | 53 | 4 | 小說,小考 |
-| 4502 | 150TH | 蔡伊琳 | 97 | 6 | - |
-| 1304 | 150TH | 王結 | 95 | 6 | - |
+| studentMec | class | studentName | englishName | test_score | BookCount(11) |
+| --- | --- | --- | --- | --- | --- |
+| 0123 | 150TH | 周傑倫 | Jay | 53 | 4 |
+| 2413 | 150TH | 蔡伊琳 | Jolin | 97 | 6 |
+| 14023 | 150TH | 王結 | Jack | 95 | 6 |
 
 ---
 
 ## 📝 訊息模板變數說明
 
-模板中可以使用花括號 `{}` 來引用 Excel 中的欄位：
+模板中可以使用花括號 `{}` 或 來引用 Excel 中的欄位：
 
-- `{name}`：學生姓名
-- `{class}`：班級名稱
-- `{test_score}`：小考成績
-- `{book_score}`：小說成績（自動對應選取月份）
-- `{加強項目}`：自訂加強欄位
+* `{studentName}`：學生姓名
+* `{class}`：班級名稱
+* `{test_score}`：小考成績
+* `{BookCount(月份)}`：小說分數（自動對應選取月份）
+* `{加強項目}`：自訂加強欄位
 
 ---
 
 ## 🛠️ 技術堆疊 (Tech Stack)
 
-- **前端**：React 18, Tailwind CSS, SheetJS (XLSX)
-- **桌面端**：Python 3, PyQt6, Pandas, PyInstaller
+* **前端**：React 18, Tailwind CSS, SheetJS (XLSX)
+
+
+* **桌面端**：Python 3, PyQt6, Pandas, PyInstaller
 
 ---
 
 ## 📜 聲明與致謝
 
-- **Icon Attribution**: <a target="_blank" href="https://icons8.com/icon/SMD8PzZeIivy/minecraft-golden-apple">Minecraft Golden Apple</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+* **Icon Attribution**: Minecraft Golden Apple icon by Icons8
 
 ---
 
 ## 📄 License
 
 This project is licensed under the MIT License.
+
+```
+(https://raw.githubusercontent.com/iristsai6/message_tool/refs/heads/main/index.html)｝
+
+```
