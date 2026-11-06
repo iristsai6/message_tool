@@ -166,8 +166,8 @@
                     return;
                 }
                 
-                // 動態對應選擇月份的 BookCount(月份)
-                const bookScoreCol = `bookcount(${month})`.toLowerCase();
+                // 動態對應選擇月份的 BookCount(月份) (已刪除 .toLowerCase())
+                const bookScoreCol = `bookcount(${month})`;
                 const defT = parseFloat(defaultTest) || 85.0;
                 const defB = parseFloat(defaultBook) || 6.0;
 
@@ -175,17 +175,17 @@
                 const pattern = /__(.*?)__|{(.*?)}/g;
 
                 excelData.forEach((row, index) => {
-                    // 轉小寫欄位以便統一處理
-                    const lowerRow = {};
-                    Object.keys(row).forEach(k => lowerRow[k.toLowerCase().trim()] = row[k]);
+                    // 欄位對應（已移除轉換小寫）
+                    const rowMap = {};
+                    Object.keys(row).forEach(k => rowMap[k.trim()] = row[k]);
 
-                    const rawTest = lowerRow['test_score'];
+                    const rawTest = rowMap['test_score'] || rowMap['Test_Score'] || rowMap['testScore'];
                     const testScore = parseFloat(rawTest) || 0.0;
 
-                    const rawBook = lowerRow[bookScoreCol];
+                    const rawBook = rowMap[bookScoreCol] || rowMap[`BookCount(${month})`];
                     const bookScore = parseFloat(rawBook) || 0.0;
 
-                    const studentClass = String(lowerRow['class'] || '預設班級').trim();
+                    const studentClass = String(rowMap['class'] || rowMap['Class'] || '預設班級').trim();
                     const clsStd = standards[studentClass] || {};
                     const passTestScore = clsStd.test !== undefined ? clsStd.test : defT;
                     const passBookScore = clsStd.book !== undefined ? clsStd.book : defB;
@@ -209,19 +209,18 @@
 
                     if (!shouldKeep) return;
 
-                    // 替換模板變數
+                    // 替換模板變數（已移除轉換小寫）
                     let currentText = templateText;
                     currentText = currentText.replace(pattern, (match, p1, p2) => {
-                        let varName = (p1 || p2).trim().toLowerCase();
-                        // 支援模板填寫 {BookCount} 或 {BookCount(11)} 等動態擷取
-                        let targetCol = varName.includes('bookcount') ? bookScoreCol : varName;
-                        return lowerRow[targetCol] !== undefined ? String(lowerRow[targetCol]) : '';
+                        let varName = (p1 || p2).trim();
+                        let targetCol = varName.toLowerCase().includes('bookcount') ? bookScoreCol : varName;
+                        return rowMap[targetCol] !== undefined ? String(rowMap[targetCol]) : (rowMap[varName] !== undefined ? String(rowMap[varName]) : '');
                     });
 
                     // 擷取指定欄位變數
-                    const studentName = String(lowerRow['studentname'] || `學員 ${index + 1}`).trim();
-                    const studentMec = lowerRow['studentmec'] || (index + 1);
-                    const englishName = lowerRow['englishname'] || '';
+                    const studentName = String(rowMap['studentname'] || rowMap['StudentName'] || `學員 ${index + 1}`).trim();
+                    const studentMec = rowMap['studentmec'] || rowMap['StudentMec'] || (index + 1);
+                    const englishName = rowMap['englishname'] || rowMap['EnglishName'] || '';
 
                     newResults.push({
                         studentMec,
@@ -321,7 +320,7 @@
                     {/* Header */}
                     <header className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-700 shrink-0">
                         <div className="w-8 h-8 rounded bg-amber-500 flex items-center justify-center text-slate-900 font-bold">🍎</div>
-                        <h1 className="text- font-bold text-white tracking-wide">批次模板生成小工具</h1>
+                        <h1 className="text-xl font-bold text-white tracking-wide">批次模板生成小工具</h1>
                     </header>
 
                     {/* Main Content Splitter */}
@@ -348,7 +347,7 @@
                             </div>
 
                             {/* 參數設定區 */}
-                            <div className="bg-slate-800 border border-slate-700 rounded- p-4 flex flex-col gap-4">
+                            <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col gap-4">
                                 <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">參數設定與管理</h3>
                                 
                                 <div className="flex items-center justify-between gap-2">
