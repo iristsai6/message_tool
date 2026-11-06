@@ -30,15 +30,15 @@
 </head>
 <body class="bg-slate-900 text-slate-200 selection:bg-amber-500 selection:text-slate-900 overflow-hidden h-screen w-full m-0">
 
-    <!--  應用的掛載點 -->
+    <!-- 應用的掛載點 -->
     <div id="root" class="h-full w-full"></div>
 
-    <!--  程式碼 -->
+    <!-- 程式碼 -->
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = ;
+        const { useState, useEffect, useRef, useMemo } = React;
 
         // --- SVG 圖示元件 ---
-        const SettingsIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>);
+        const SettingsIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>);
         const RotateCwIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>);
         const UploadIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>);
         const SaveIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>);
@@ -107,6 +107,7 @@
             
             const [showSettings, setShowSettings] = useState(false);
             const [showHistory, setShowHistory] = useState(false);
+            const [showHelpModal, setShowHelpModal] = useState(false);
 
             const fileInputRef = useRef(null);
 
@@ -215,7 +216,6 @@
                         return rowMap[targetCol] !== undefined ? String(rowMap[targetCol]) : (rowMap[varName] !== undefined ? String(rowMap[varName]) : '');
                     });
 
-                    // 修正：支援多種 Excel 欄位名稱對應中文姓名與英文名字
                     const studentName = String(
                         rowMap['studentname'] || rowMap['StudentName'] || 
                         rowMap['姓名'] || rowMap['學生姓名'] || 
@@ -434,6 +434,14 @@
                                 >
                                     <HistoryIcon size={18} /> 查看本機歷史紀錄
                                 </button>
+
+                                {/* 🚨 操作說明與常見問題除錯按鈕 */}
+                                <button 
+                                    onClick={() => setShowHelpModal(true)}
+                                    className="w-full flex items-center justify-center gap-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/50 font-semibold py-2.5 rounded-lg transition-colors mt-2"
+                                >
+                                    🚨 操作說明與常見問題 Q&A
+                                </button>
                             </div>
                         </div>
 
@@ -519,6 +527,7 @@
                         </div>
                     </div>
 
+                    {/* 設定 Modal */}
                     {showSettings && (
                         <SettingsModal 
                             standards={standards} 
@@ -534,8 +543,40 @@
                         />
                     )}
 
+                    {/* 歷史紀錄 Modal */}
                     {showHistory && (
                         <HistoryModal onClose={() => setShowHistory(false)} />
+                    )}
+
+                    {/* 🚨 說明與常見問題 Q&A Modal */}
+                    {showHelpModal && (
+                        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
+                                <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
+                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">🚨 操作說明與常見問題除錯</h2>
+                                    <button onClick={() => setShowHelpModal(false)} className="text-slate-400 hover:text-white"><XIcon size={24} /></button>
+                                </div>
+                                
+                                <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 max-h-[60vh] text-sm text-slate-300">
+                                    <h3 className="font-bold text-amber-400">📊 1. Excel 欄位對照說明</h3>
+                                    <p>• <b>姓名欄位</b>：請命名為 <code>studentname</code>、<code>StudentName</code>、<code>姓名</code> 或 <code>學生姓名</code>[cite: 1]</p>
+                                    <p>• <b>班級欄位</b>：請命名為 <code>class</code> 或 <code>Class</code>[cite: 1]</p>
+                                    <p>• <b>小考成績</b>：請命名為 <code>test_score</code>、<code>Test_Score</code> 或 <code>testScore</code>[cite: 1]</p>
+                                    <p>• <b>讀本分數</b>：請命名為 <code>bookcount(月份)</code>（例如 <code>bookcount(11)</code>）[cite: 1]</p>
+
+                                    <hr className="border-slate-700 my-2"/>
+
+                                    <h3 className="font-bold text-rose-400">❓ 2. 常見問題 Q&A 與除錯</h3>
+                                    <p><b>Q: 名字顯示「學員 1」？</b><br/>A: 代表 Excel 找不到姓名欄位，請檢查第一列標題是否正確。</p>
+                                    <p><b>Q: 為什麼找不到未達標學生？</b><br/>A: 可能是學生分數皆已達標，若需檢視全部名單請勾選左側「啟用群發模式」。</p>
+                                    <p><b>Q: 載入 Excel 失敗？</b><br/>A: 請檢查網路連線是否正常，或重新整理網頁後再試一次。</p>
+                                </div>
+
+                                <div className="p-4 border-t border-slate-700 flex justify-end bg-slate-900">
+                                    <button onClick={() => setShowHelpModal(false)} className="px-6 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold transition-colors">關閉</button>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
             );
@@ -707,46 +748,7 @@
                 </div>
             );
         }
-        // 在 App 元件中加入狀態
-        const [showHelpModal, setShowHelpModal] = useState(false);
-        
-        // 在介面適當位置（例如左側面板底部或標題旁）加入按鈕：
-        <button 
-            onClick={() => setShowHelpModal(true)}
-            className="w-full flex items-center justify-center gap-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/50 font-semibold py-2.5 rounded-lg transition-colors mt-2"
-        >
-            🚨 操作說明與常見問題 Q&A
-        </button>
-        
-        {/* 彈出視窗元件 */}
-        {showHelpModal && (
-            <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
-                    <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">🚨 操作說明與常見問題除錯</h2>
-                        <button onClick={() => setShowHelpModal(false)} className="text-slate-400 hover:text-white">✕</button>
-                    </div>
-                    
-                    <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 max-h-[60vh] text-sm text-slate-300">
-                        <h3 className="font-bold text-amber-400">📊 1. Excel 欄位對照表</h3>
-                        <p>• 姓名欄位：請命名為 <code>studentname</code> 或 <code>姓名</code>[cite: 1]</p>
-                        <p>• 班級欄位：請命名為 <code>class</code>[cite: 1]</p>
-                        <p>• 小考成績：請命名為 <code>test_score</code>[cite: 1]</p>
-                        <p>• 讀本分數：請命名為 <code>bookcount(月份)</code>（例如 <code>bookcount(11)</code>）[cite: 1]</p>
-        
-                        <hr className="border-slate-700 my-2"/>
-        
-                        <h3 className="font-bold text-rose-400">❓ 2. 常見問題 Q&A</h3>
-                        <p><b>Q: 名字顯示「學員 1」？</b><br/>A: 代表 Excel 找不到姓名欄位，請檢查標題是否正確。</p>
-                        <p><b>Q: 為什麼找不到未達標學生？</b><br/>A: 可能是學生分數皆已達標，若需看全部名單請勾選「啟用群發模式」。</p>
-                    </div>
-        
-                    <div className="p-4 border-t border-slate-700 flex justify-end bg-slate-900">
-                        <button onClick={() => setShowHelpModal(false)} className="px-6 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold transition-colors">關閉</button>
-                    </div>
-                </div>
-            </div>
-        )}
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
