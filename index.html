@@ -107,7 +107,7 @@
             const [showHistory, setShowHistory] = useState(false);
             const [showHelpModal, setShowHelpModal] = useState(false);
 
-            // --- 欄寬自由調整狀態 (將 action 移至第一欄，寬度預設 120px) ---
+            // --- 欄寬自由調整狀態 (action 置於第一欄) ---
             const [colWidths, setColWidths] = useState({
                 action: 120,
                 mec: 110,
@@ -117,7 +117,6 @@
                 preview: 350
             });
 
-            // --- 記錄每一列是否展開 (預設全展開或收合可自訂，此處預設全展開以防漏看) ---
             const [expandedRows, setExpandedRows] = useState({});
             const [rowHeights, setRowHeights] = useState({});
 
@@ -477,18 +476,17 @@
                             </div>
                         </div>
 
-                        {/* 右側結果表格 (快速操作移至第一欄，預覽支援可折疊) */}
+                        {/* 右側結果表格 */}
                         <div className="flex-1 flex flex-col bg-slate-800 border border-slate-700 rounded-xl overflow-hidden min-h-[400px]">
                             <div className="p-3.5 border-b border-slate-700 font-bold text-white bg-slate-800/50 text-sm flex justify-between items-center shrink-0">
                                 <span>{rightTitle}</span>
-                                <span className="text-xs font-normal text-slate-400">💡 提示：「快速操作」已移至第一欄，預覽文字支援收合與展開</span>
+                                <span className="text-xs font-normal text-slate-400">💡 提示：支援雙向捲動與欄寬/列高拖曳</span>
                             </div>
                             
                             <div className="flex-1 overflow-auto custom-scrollbar w-full">
                                 <table className="text-left border-collapse text-sm table-fixed" style={{ width: `${totalTableWidth}px`, minWidth: '100%' }}>
                                     <thead className="sticky top-0 bg-slate-900 border-b border-slate-700 shadow-md z-20">
                                         <tr>
-                                            {/* 第一欄：快速操作 */}
                                             <th className="py-2.5 px-3 text-center text-slate-400 font-medium relative select-none" style={{ width: `${colWidths.action}px` }}>
                                                 快速操作
                                                 <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'action')} title="拖曳調整欄寬" />
@@ -544,7 +542,6 @@
                                                         style={{ height: customHeight }}
                                                         className={`transition-colors relative align-top ${item.processed ? 'bg-emerald-900/20' : 'hover:bg-slate-700/30'}`}
                                                     >
-                                                        {/* 第一欄：快速操作按鈕 */}
                                                         <td className="py-2.5 px-3 text-center relative" style={{ width: `${colWidths.action}px` }}>
                                                             {item.processed ? (
                                                                 <button className="w-full flex items-center justify-center gap-1 bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 py-1 rounded text-xs font-bold pointer-events-none">
@@ -581,7 +578,6 @@
                                                             <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-row-resize hover:bg-amber-500/60 transition-colors z-20" onMouseDown={(e) => handleRowResize(e, idx)} title="拖曳調整列高" />
                                                         </td>
 
-                                                        {/* 生成預覽內容 (可折疊) */}
                                                         <td className="py-2.5 px-3 text-slate-300 relative" style={{ width: `${colWidths.preview}px` }}>
                                                             <div className={`text-xs opacity-90 whitespace-pre-wrap custom-scrollbar pr-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
                                                                 {item.generatedText}
@@ -634,20 +630,35 @@
                         <HistoryModal onClose={() => setShowHistory(false)} />
                     )}
 
-                    {/* 🚨 說明與 Q&A Modal */}
+                    {/* 🚨 說明與常見問題 Q&A Modal (已補回原有的欄位與常見問題說明) */}
                     {showHelpModal && (
                         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
                             <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
                                 <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
-                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">🚨 操作說明與 Q&A</h2>
+                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">🚨 操作說明與常見問題除錯</h2>
                                     <button onClick={() => setShowHelpModal(false)} className="text-slate-400 hover:text-white"><XIcon size={24} /></button>
                                 </div>
                                 
                                 <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 max-h-[60vh] text-sm text-slate-300">
-                                    <h3 className="font-bold text-amber-400">✨ 本次更新亮點</h3>
-                                    <p>• <b>快速操作移至第一欄</b>：按鈕固定在最左側，點擊複製更快速。</p>
-                                    <p>• <b>生成預覽內容可折疊</b>：每列下方皆有「展開完整內容 / 收合內容」按鈕，不需擔心長篇訊息被卡死或侷限。</p>
-                                    <p>• <b>自由調整欄寬與列高</b>：持續支援表頭右側拉寬與列下方拉高。</p>
+                                    <h3 className="font-bold text-amber-400">📊 1. Excel 欄位對照說明</h3>
+                                    <p>• <b>姓名欄位</b>：請命名為 <code>studentName</code>、<code>姓名</code> 或 <code>學生姓名</code>[cite: 1]</p>
+                                    <p>• <b>班級欄位</b>：請命名為 <code>class</code> 或 <code>班級</code>[cite: 1]</p>
+                                    <p>• <b>小考成績</b>：請命名為 <code>test_score</code> 或 <code>testScore</code>[cite: 1]</p>
+                                    <p>• <b>讀本分數</b>：請命名為對應月份格式，例如 <code>BookCount(11)</code>[cite: 1]</p>
+
+                                    <hr className="border-slate-700 my-2"/>
+
+                                    <h3 className="font-bold text-amber-400">📐 2. 表格操作與拖曳說明</h3>
+                                    <p>• <b>調整欄寬</b>：將滑鼠移至表頭右側邊緣，按住左右拖曳即可調整欄寬。</p>
+                                    <p>• <b>調整列高</b>：將滑鼠移至資料列最下方邊緣，按住上下拖曳即可調整列高。</p>
+                                    <p>• <b>內容收合</b>：點擊預覽欄位下方的「展開完整內容 / 收合內容」按鈕可自由切換長篇文字顯示。</p>
+
+                                    <hr className="border-slate-700 my-2"/>
+
+                                    <h3 className="font-bold text-rose-400">❓ 3. 常見問題 Q&A 與除錯</h3>
+                                    <p><b>Q: 名字顯示「學員 1」？</b><br/>A: 代表 Excel 找不到對應的姓名欄位，請檢查 Excel 第一列標題是否正確[cite: 1]。</p>
+                                    <p><b>Q: 為什麼找不到未達標學生？</b><br/>A: 可能是學生分數皆已達標，若需檢視全部名單請勾選左側「啟用群發模式」。</p>
+                                    <p><b>Q: 載入 Excel 失敗？</b><br/>A: 請檢查檔案格式是否正確（.xlsx / .xls），或重新上傳再試一次。</p>
                                 </div>
 
                                 <div className="p-4 border-t border-slate-700 flex justify-end bg-slate-900">
