@@ -209,6 +209,9 @@
                     setExcelData(data);
                 };
                 reader.readAsBinaryString(file);
+
+                // 上傳完成後清空 input value，確保下次選同檔名能再次觸發 onChange
+                e.target.value = null;
             };
 
             const reloadData = () => {
@@ -336,8 +339,11 @@
                         template: templateText,
                         records: results
                     };
-                    existingHistory.unshift(newRecord);
-                    localStorage.setItem('app_history', JSON.stringify(existingHistory));
+                    
+                    // 僅保留最近 20 筆歷史紀錄，避免佔滿 LocalStorage
+                    const updatedHistory = [newRecord, ...existingHistory].slice(0, 20);
+                    
+                    localStorage.setItem('app_history', JSON.stringify(updatedHistory));
                     alert("已成功儲存至本機歷史紀錄！");
                 } catch (e) {
                     alert(`儲存失敗：${e.message}`);
@@ -630,7 +636,7 @@
                         <HistoryModal onClose={() => setShowHistory(false)} />
                     )}
 
-                    {/* 🚨 說明與常見問題 Q&A Modal (已補回原有的欄位與常見問題說明) */}
+                    {/* 🚨 說明與常見問題 Q&A Modal */}
                     {showHelpModal && (
                         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
                             <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
@@ -641,7 +647,7 @@
                                 
                                 <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 max-h-[60vh] text-sm text-slate-300">
                                     <h3 className="font-bold text-amber-400">📊 1. Excel 欄位對照說明</h3>
-                                    <p>• <b>姓名欄位</b>：請命名為 <code>studentName</code>、<code>姓名</code> 或 <code>學生姓名</code>[cite: 1]</p>
+                                    <p>• <b>姓名欄位</b>：請命名為 <code>studentName</code>、<code>姓名</code> 或 <code>學生姓名</code></p>
                                     <p>• <b>班級欄位</b>：請命名為 <code>class</code> 或 <code>班級</code>[cite: 1]</p>
                                     <p>• <b>小考成績</b>：請命名為 <code>test_score</code> 或 <code>testScore</code>[cite: 1]</p>
                                     <p>• <b>讀本分數</b>：請命名為對應月份格式，例如 <code>BookCount(11)</code>[cite: 1]</p>
@@ -656,9 +662,9 @@
                                     <hr className="border-slate-700 my-2"/>
 
                                     <h3 className="font-bold text-rose-400">❓ 3. 常見問題 Q&A 與除錯</h3>
-                                    <p><b>Q: 名字顯示「學員 1」？</b><br/>A: 代表 Excel 找不到對應的姓名欄位，請檢查 Excel 第一列標題是否正確。</p>
+                                    <p><b>Q: 名字顯示「學員 1」？</b><br/>A: 代表 Excel 找不到對應的姓名欄位，請檢查 Excel 第一列標題是否正確[cite: 1]。</p>
                                     <p><b>Q: 為什麼找不到未達標學生？</b><br/>A: 可能是學生分數皆已達標，若需檢視全部名單請勾選左側「啟用群發模式」。</p>
-                                    <p><b>Q: 載入 Excel 失敗？</b><br/>A: 請檢查檔案格式是否正確（.xlsx 、 .xls、.csv 或 .json），或重新上傳再試一次。</p>
+                                    <p><b>Q: 載入 Excel 失敗？</b><br/>A: 請檢查檔案格式是否正確（.xlsx / .xls），或重新上傳再試一次。</p>
                                 </div>
 
                                 <div className="p-4 border-t border-slate-700 flex justify-end bg-slate-900">
