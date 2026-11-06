@@ -449,7 +449,7 @@
                                     >
                                         <UploadIcon size={18} /> 選擇 Excel
                                     </button>
-                                    <input type="file" accept=".xlsx, .xls, .csv, .json" className="hidden" ref={fileInputRef} onChange={handleFileUpload} /> 
+                                    <input type="file" accept="., .xls, .csv, .json" className="hidden" ref={fileInputRef} onChange={handleFileUpload} /> 
                                     
                                     <button 
                                         onClick={reloadData}
@@ -664,7 +664,7 @@
                                     <h3 className="font-bold text-rose-400">❓ 3. 常見問題 Q&A 與除錯</h3>
                                     <p><b>Q: 名字顯示「學員 1」？</b><br/>A: 代表 Excel 找不到對應的姓名欄位，請檢查 Excel 第一列標題是否正確。</p>
                                     <p><b>Q: 為什麼找不到未達標學生？</b><br/>A: 可能是學生分數皆已達標，若需檢視全部名單請勾選左側「啟用群發模式」。</p>
-                                    <p><b>Q: 載入 Excel 失敗？</b><br/>A: 請檢查檔案格式是否正確（.xlsx / .xls /、.csv / .json ），或重新上傳再試一次。</p>
+                                    <p><b>Q: 載入 Excel 失敗？</b><br/>A: 請檢查檔案格式是否正確（.xlsx / .xls / .csv / .json ），或重新上傳再試一次。</p>
                                 </div>
 
                                 <div className="p-4 border-t border-slate-700 flex justify-end bg-slate-900">
