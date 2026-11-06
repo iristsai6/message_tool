@@ -109,6 +109,35 @@
             const [showHistory, setShowHistory] = useState(false);
             const [showHelpModal, setShowHelpModal] = useState(false);
 
+            // --- 欄寬自由調整狀態 (可透過滑鼠拖曳改變) ---
+            const [colWidths, setColWidths] = useState({
+                mec: 110,
+                class: 90,
+                name: 140,
+                score: 200,
+                preview: 350,
+                action: 120
+            });
+
+            const handleColResize = (e, key) => {
+                const startX = e.clientX;
+                const startWidth = colWidths[key];
+
+                const onMouseMove = (moveEvent) => {
+                    const delta = moveEvent.clientX - startX;
+                    const newWidth = Math.max(60, startWidth + delta); // 最小寬度 60px
+                    setColWidths(prev => ({ ...prev, [key]: newWidth }));
+                };
+
+                const onMouseUp = () => {
+                    window.removeEventListener('mousemove', onMouseMove);
+                    window.removeEventListener('mouseup', onMouseUp);
+                };
+
+                window.addEventListener('mousemove', onMouseMove);
+                window.addEventListener('mouseup', onMouseUp);
+            };
+
             const fileInputRef = useRef(null);
 
             // --- 初始化從 LocalStorage 讀取資料 ---
@@ -161,14 +190,13 @@
                 reader.readAsBinaryString(file);
             };
 
-            // --- 重寫後的固定表頭識別與對應邏輯 ---
+            // --- 固定表頭識別與對應邏輯 ---
             const reloadData = () => {
                 if (excelData.length === 0) {
                     alert("請先選擇 Excel 檔案！");
                     return;
                 }
                 
-                // 根據當前選擇的月份動態組合 BookCount 欄位名稱（如 BookCount(11)）
                 const bookScoreCol = `BookCount(${month})`;
                 const defT = parseFloat(defaultTest) || 85.0;
                 const defB = parseFloat(defaultBook) || 6.0;
@@ -177,7 +205,6 @@
                 const pattern = /__(.*?)__|{(.*?)}/g;
 
                 excelData.forEach((row, index) => {
-                    // 直接透過固定的表頭名稱精確讀取數值，並加上預設防呆
                     const studentMec = row['studentMec'] !== undefined ? row['studentMec'] : (index + 1);
                     const studentName = String(row['studentName'] || `學員 ${index + 1}`).trim();
                     const englishName = String(row['englishName'] || '').trim();
@@ -186,7 +213,6 @@
                     const testScore = parseFloat(row['test_score']) || 0.0;
                     const bookScore = parseFloat(row[bookScoreCol]) || 0.0;
 
-                    // 取得各班級標準
                     const clsStd = standards[studentClass] || {};
                     const passTestScore = clsStd.test !== undefined ? clsStd.test : defT;
                     const passBookScore = clsStd.book !== undefined ? clsStd.book : defB;
@@ -194,7 +220,6 @@
                     const isTestPassed = testScore >= passTestScore;
                     const isBookPassed = bookScore >= passBookScore;
 
-                    // 篩選邏輯
                     let shouldKeep = false;
                     if (isBroadcast) {
                         shouldKeep = true;
@@ -210,11 +235,9 @@
 
                     if (!shouldKeep) return;
 
-                    // 替換模板變數
                     let currentText = templateText;
                     currentText = currentText.replace(pattern, (match, p1, p2) => {
                         let varName = (p1 || p2).trim();
-                        // 若模板寫的是 {BookCount} 或變數包含 bookcount，則替換為當月對應的 BookCount(月份) 欄位數值
                         let targetCol = varName.toLowerCase().includes('bookcount') ? bookScoreCol : varName;
                         return row[targetCol] !== undefined ? String(row[targetCol]) : (row[varName] !== undefined ? String(row[varName]) : '');
                     });
@@ -235,14 +258,12 @@
                 setResults(newResults);
             };
 
-            // 當參數或檔案改變時，自動重新計算
             useEffect(() => {
                 if (excelData.length > 0) {
                     reloadData();
                 }
             }, [excelData, templateText, month, defaultTest, defaultBook, isBroadcast, filterTest, filterBook, standards]);
 
-            // --- 複製文字與備用方案 (Fallback) ---
             const executeCopy = async (text) => {
                 try {
                     await navigator.clipboard.writeText(text);
@@ -266,7 +287,6 @@
                 }
             };
 
-            // --- 複製與標記功能 ---
             const handleCopy = async (index) => {
                 const item = results[index];
                 await executeCopy(item.generatedText);
@@ -282,7 +302,6 @@
                 alert("已將所有生成內容複製到剪貼簿！");
             };
 
-            // --- 儲存歷史紀錄 ---
             const saveToLocalDB = () => {
                 if (results.length === 0) {
                     alert("目前沒有可儲存的生成結果！");
@@ -303,7 +322,6 @@
                 }
             };
 
-            // --- 標題動態產生 ---
             const rightTitle = useMemo(() => {
                 if (isBroadcast) return "2. 全體學生群發名單與即時確認區 (群發模式)：";
                 if (filterTest && filterBook) return "2. 未達標學生名單 (小考或小說未達標)：";
@@ -430,27 +448,45 @@
                                     onClick={() => setShowHelpModal(true)}
                                     className="w-full flex items-center justify-center gap-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/50 font-semibold py-2.5 rounded-lg transition-colors mt-2"
                                 >
-                                    🚨 操作說明與固定表頭 Q&A
+                                    🚨 操作說明與 Q&A
                                 </button>
                             </div>
                         </div>
 
-                        {/* 右側結果表格 */}
+                        {/* 右側結果表格 (支援滑鼠拖曳調整欄寬) */}
                         <div className="flex-1 flex flex-col overflow-hidden bg-slate-800 border border-slate-700 rounded-xl">
-                            <div className="p-4 border-b border-slate-700 font-bold text-white bg-slate-800/50">
-                                {rightTitle}
+                            <div className="p-3.5 border-b border-slate-700 font-bold text-white bg-slate-800/50 text-sm flex justify-between items-center">
+                                <span>{rightTitle}</span>
+                                <span className="text-xs font-normal text-slate-400">💡 提示：將滑鼠移至表頭右邊緣即可按住拖曳調整欄寬</span>
                             </div>
                             
                             <div className="flex-1 overflow-auto custom-scrollbar">
-                                <table className="w-full text-left border-collapse text-sm min-w-[800px] md:min-w-full">
+                                <table className="w-full text-left border-collapse text-sm table-fixed">
                                     <thead className="sticky top-0 bg-slate-900 border-b border-slate-700 shadow-md z-10">
                                         <tr>
-                                            <th className="p-3 w-16 text-center text-slate-400">學號/項次</th>
-                                            <th className="p-3 w-24 text-slate-400">班級</th>
-                                            <th className="p-3 w-40 text-slate-400">學員姓名 (英)</th>
-                                            <th className="p-3 w-64 text-slate-400">小考/小說成績</th>
-                                            <th className="p-3 text-slate-400">生成預覽內容</th>
-                                            <th className="p-3 w-32 text-center text-slate-400">快速操作</th>
+                                            <th className="py-2.5 px-3 text-center text-slate-400 font-medium relative select-none" style={{ width: `${colWidths.mec}px` }}>
+                                                學號/項次
+                                                <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'mec')} title="拖曳調整欄寬" />
+                                            </th>
+                                            <th className="py-2.5 px-3 text-slate-400 font-medium relative select-none" style={{ width: `${colWidths.class}px` }}>
+                                                班級
+                                                <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'class')} title="拖曳調整欄寬" />
+                                            </th>
+                                            <th className="py-2.5 px-3 text-slate-400 font-medium relative select-none" style={{ width: `${colWidths.name}px` }}>
+                                                學員姓名 (英)
+                                                <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'name')} title="拖曳調整欄寬" />
+                                            </th>
+                                            <th className="py-2.5 px-3 text-slate-400 font-medium relative select-none" style={{ width: `${colWidths.score}px` }}>
+                                                小考/小說成績
+                                                <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'score')} title="拖曳調整欄寬" />
+                                            </th>
+                                            <th className="py-2.5 px-3 text-slate-400 font-medium relative select-none" style={{ width: `${colWidths.preview}px` }}>
+                                                生成預覽內容
+                                                <div className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-amber-500/50 transition-colors" onMouseDown={(e) => handleColResize(e, 'preview')} title="拖曳調整欄寬" />
+                                            </th>
+                                            <th className="py-2.5 px-3 text-center text-slate-400 font-medium" style={{ width: `${colWidths.action}px` }}>
+                                                快速操作
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-700/50">
@@ -475,16 +511,16 @@
 
                                                 return (
                                                     <tr key={item.studentMec + '-' + idx} className={`transition-colors ${item.processed ? 'bg-emerald-900/20' : 'hover:bg-slate-700/30'}`}>
-                                                        <td className="p-3 text-center text-slate-400">{item.studentMec}</td>
-                                                        <td className="p-3 font-semibold text-amber-400">{item.studentClass}</td>
-                                                        <td className="p-3 font-bold text-slate-200">
+                                                        <td className="py-2.5 px-3 text-center text-slate-400 text-xs font-mono truncate" style={{ width: `${colWidths.mec}px` }}>{item.studentMec}</td>
+                                                        <td className="py-2.5 px-3 font-semibold text-amber-400 text-xs truncate" style={{ width: `${colWidths.class}px` }}>{item.studentClass}</td>
+                                                        <td className="py-2.5 px-3 font-bold text-slate-200 text-xs truncate" style={{ width: `${colWidths.name}px` }}>
                                                             {item.studentName} {item.englishName ? `(${item.englishName})` : ''}
                                                         </td>
-                                                        <td className="p-3 text-slate-300 text-xs leading-relaxed">{statusStr}</td>
-                                                        <td className="p-3 text-slate-300">
-                                                            <div className="line-clamp-3 text-xs opacity-90 whitespace-pre-wrap">{item.generatedText}</div>
+                                                        <td className="py-2.5 px-3 text-slate-300 text-xs leading-relaxed" style={{ width: `${colWidths.score}px` }}>{statusStr}</td>
+                                                        <td className="py-2.5 px-3 text-slate-300" style={{ width: `${colWidths.preview}px` }}>
+                                                            <div className="line-clamp-2 text-xs opacity-90 whitespace-pre-wrap">{item.generatedText}</div>
                                                         </td>
-                                                        <td className="p-3 text-center">
+                                                        <td className="py-2.5 px-3 text-center" style={{ width: `${colWidths.action}px` }}>
                                                             {item.processed ? (
                                                                 <button className="w-full flex items-center justify-center gap-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 py-1.5 rounded text-xs font-bold pointer-events-none">
                                                                     <CheckCircleIcon size={14} /> 已傳送
@@ -506,10 +542,10 @@
                                 </table>
                             </div>
 
-                            <div className="p-4 border-t border-slate-700 bg-slate-900/50">
+                            <div className="p-3 border-t border-slate-700 bg-slate-900/50">
                                 <button 
                                     onClick={handleCopyAll}
-                                    className="w-full bg-slate-200 hover:bg-white text-slate-900 font-bold py-3 rounded-xl transition-colors shadow-lg"
+                                    className="w-full bg-slate-200 hover:bg-white text-slate-900 font-bold py-2.5 rounded-xl transition-colors shadow-lg text-sm"
                                 >
                                     一鍵複製全部未達標生成結果
                                 </button>
@@ -538,31 +574,23 @@
                         <HistoryModal onClose={() => setShowHistory(false)} />
                     )}
 
-                    {/* 🚨 說明與固定表頭 Q&A Modal */}
+                    {/* 🚨 說明與 Q&A Modal */}
                     {showHelpModal && (
                         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
                             <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
                                 <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
-                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">🚨 固定表頭規格與除錯 Q&A</h2>
+                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">🚨 操作說明與 Q&A</h2>
                                     <button onClick={() => setShowHelpModal(false)} className="text-slate-400 hover:text-white"><XIcon size={24} /></button>
                                 </div>
                                 
                                 <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 max-h-[60vh] text-sm text-slate-300">
-                                    <h3 className="font-bold text-amber-400">📊 1. 固定的 Excel 表頭規範</h3>
-                                    <p>您的匯入表頭已固定為以下英文欄位，系統將直接進行精確對應：</p>
-                                    <p>• <code>studentMec</code>：學員項次 / 學號</p>
-                                    <p>• <code>studentName</code>：學員中文姓名</p>
-                                    <p>• <code>englishName</code>：學員英文名字</p>
-                                    <p>• <code>class</code>：班級代號（如 150TH, 200TH）</p>
-                                    <p>• <code>test_score</code>：小考成績</p>
-                                    <p>• <code>BookCount(月份)</code>：動態讀本分數（例如 <code>BookCount(11)</code>）</p>
+                                    <h3 className="font-bold text-amber-400">🖱️ 欄寬自由調整說明</h3>
+                                    <p>將滑鼠游標移到表格上方任一標題（例如「學員姓名」與「成績」之間）的**右側邊界**，當游標變成左右箭頭時，**按住滑鼠左鍵左右拖曳**即可自由調整該欄位的寬度！</p>
 
                                     <hr className="border-slate-700 my-2"/>
 
-                                    <h3 className="font-bold text-rose-400">❓ 2. 常見問題 Q&A</h3>
-                                    <p><b>Q: 為什麼資料讀進來變成預設值？</b><br/>A: 請確認上傳的 Excel 第一列標題是否完全符合上述固定英文名稱（注意大小寫須相符）。</p>
-                                    <p><b>Q: 讀本分數抓不到數值？</b><br/>A: 請檢查左側「對應讀本月份」選擇的月份是否與 Excel 中的欄位括號數字一致（例如選 11 月，Excel 欄位需為 <code>BookCount(11)</code>）。</p>
-                                    <p><b>Q: 載入 Excel 失敗？</b><br/>A: 請確認網路連線正常以載入 SheetJS 套件，或重新整理頁面後重試。</p>
+                                    <h3 className="font-bold text-amber-400">📊 固定的 Excel 表頭規範</h3>
+                                    <p>您的匯入表頭固定為：<code>studentMec</code>、<code>studentName</code>、<code>englishName</code>、<code>class</code>、<code>test_score</code>、<code>BookCount(月份)</code>。</p>
                                 </div>
 
                                 <div className="p-4 border-t border-slate-700 flex justify-end bg-slate-900">
