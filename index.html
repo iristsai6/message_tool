@@ -138,7 +138,7 @@
                 setTemplateText(templates[name] || "");
             };
 
-            // --- Excel 處理邏輯 ---
+            // --- Excel 處理邏輯 (已修正為 window.XLSX) ---
             const handleFileUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -146,15 +146,15 @@
 
                 const reader = new FileReader();
                 reader.onload = (evt) => {
-                    if (!window.SX) {
+                    if (!window.XLSX) {
                         alert("Excel 處理模組載入失敗，請檢查網路連線。");
                         return;
                     }
                     const bstr = evt.target.result;
-                    const wb = window.SX.read(bstr, { type: 'binary' });
+                    const wb = window.XLSX.read(bstr, { type: 'binary' });
                     const wsname = wb.SheetNames[0];
                     const ws = wb.Sheets[wsname];
-                    const data = window.SX.utils.sheet_to_json(ws);
+                    const data = window.XLSX.utils.sheet_to_json(ws);
                     setExcelData(data);
                 };
                 reader.readAsBinaryString(file);
@@ -166,7 +166,7 @@
                     return;
                 }
                 
-                // 動態對應選擇月份的 BookCount(月份) (已刪除 .toLowerCase())
+                // 動態對應選擇月份的 BookCount(月份)
                 const bookScoreCol = `bookcount(${month})`;
                 const defT = parseFloat(defaultTest) || 85.0;
                 const defB = parseFloat(defaultBook) || 6.0;
@@ -175,7 +175,6 @@
                 const pattern = /__(.*?)__|{(.*?)}/g;
 
                 excelData.forEach((row, index) => {
-                    // 欄位對應（已移除轉換小寫）
                     const rowMap = {};
                     Object.keys(row).forEach(k => rowMap[k.trim()] = row[k]);
 
@@ -209,7 +208,7 @@
 
                     if (!shouldKeep) return;
 
-                    // 替換模板變數（已移除轉換小寫）
+                    // 替換模板變數
                     let currentText = templateText;
                     currentText = currentText.replace(pattern, (match, p1, p2) => {
                         let varName = (p1 || p2).trim();
@@ -591,7 +590,7 @@
 
                             <hr className="border-slate-700"/>
 
-                            {/* 模板管理 (已套用 RWD) */}
+                            {/* 模板管理 */}
                             <div className="flex flex-col gap-3">
                                 <label className="block font-bold text-slate-200">📝 訊息模板管理區：</label>
                                 <div className="flex flex-col md:flex-row gap-4 h-auto md:h-64">
@@ -635,7 +634,7 @@
             );
         }
 
-        // --- 歷史紀錄檢視對話框組件 (已套用 RWD) ---
+        // --- 歷史紀錄檢視對話框組件 ---
         function HistoryModal({ onClose }) {
             const [history, setHistory] = useState([]);
             const [selectedIdx, setSelectedIdx] = useState(null);
