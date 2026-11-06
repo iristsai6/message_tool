@@ -138,7 +138,7 @@
                 setTemplateText(templates[name] || "");
             };
 
-            // --- Excel 處理邏輯 (已修正為 window.XLSX) ---
+            // --- Excel 處理邏輯 ---
             const handleFileUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -166,7 +166,6 @@
                     return;
                 }
                 
-                // 動態對應選擇月份的 BookCount(月份)
                 const bookScoreCol = `bookcount(${month})`;
                 const defT = parseFloat(defaultTest) || 85.0;
                 const defB = parseFloat(defaultBook) || 6.0;
@@ -216,10 +215,19 @@
                         return rowMap[targetCol] !== undefined ? String(rowMap[targetCol]) : (rowMap[varName] !== undefined ? String(rowMap[varName]) : '');
                     });
 
-                    // 擷取指定欄位變數
-                    const studentName = String(rowMap['studentname'] || rowMap['StudentName'] || `學員 ${index + 1}`).trim();
-                    const studentMec = rowMap['studentmec'] || rowMap['StudentMec'] || (index + 1);
-                    const englishName = rowMap['englishname'] || rowMap['EnglishName'] || '';
+                    // 修正：支援多種 Excel 欄位名稱對應中文姓名與英文名字
+                    const studentName = String(
+                        rowMap['studentname'] || rowMap['StudentName'] || 
+                        rowMap['姓名'] || rowMap['學生姓名'] || 
+                        `學員 ${index + 1}`
+                    ).trim();
+
+                    const studentMec = rowMap['studentmec'] || rowMap['StudentMec'] || rowMap['學號'] || (index + 1);
+                    
+                    const englishName = String(
+                        rowMap['englishname'] || rowMap['EnglishName'] || 
+                        rowMap['英文名字'] || rowMap['英文名'] || ''
+                    ).trim();
 
                     newResults.push({
                         studentMec,
@@ -456,7 +464,6 @@
                                             </tr>
                                         ) : (
                                             results.map((item, idx) => {
-                                                // 狀態文字生成
                                                 let statusStr = "";
                                                 if (isBroadcast) {
                                                     statusStr = `班級:${item.studentClass} (群發)`;
@@ -576,7 +583,6 @@
                         </div>
                         
                         <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-6 max-h-[60vh]">
-                            {/* 分數設定 */}
                             <div>
                                 <label className="block font-bold text-slate-200 mb-2">📊 各班級獨立標準設定 (格式: 班級:小考成績/小說分數)：</label>
                                 <input 
@@ -590,7 +596,6 @@
 
                             <hr className="border-slate-700"/>
 
-                            {/* 模板管理 */}
                             <div className="flex flex-col gap-3">
                                 <label className="block font-bold text-slate-200">📝 訊息模板管理區：</label>
                                 <div className="flex flex-col md:flex-row gap-4 h-auto md:h-64">
@@ -670,7 +675,6 @@
                         </div>
                         
                         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                            {/* 左側列表 */}
                             <div className="w-full md:w-1/3 h-1/3 md:h-full border-b md:border-b-0 md:border-r border-slate-700 overflow-y-auto custom-scrollbar p-3 bg-slate-900/30">
                                 <div className="font-bold text-slate-300 mb-3 ml-1 text-sm">已儲存的歷史批次紀錄：</div>
                                 {history.length === 0 ? (
@@ -690,7 +694,6 @@
                                 )}
                             </div>
                             
-                            {/* 右側內容 */}
                             <div className="w-full md:w-2/3 h-2/3 md:h-full p-4 bg-slate-900">
                                 <textarea 
                                     readOnly
