@@ -1,6 +1,6 @@
 # 🍎 [批次模板生成小工具](https://iristsai6.github.io/message_tool/)
 
-![Version](https://img.shields.io/badge/version-1.1.0-amber)
+![Version](https://img.shields.io/badge/version-1.2.0-amber)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Desktop-slate)
 
@@ -9,7 +9,8 @@
 
 ---
 
-## ✨ 核心特色與功能 (v1.1.0 新功能)
+## ✨ 核心特色與功能 
+*v1.1.0*
 
 - **📊 Excel 智慧解析與動態月份對應**：
   - 支援上傳 `.xlsx` 、 `.xls`、`.csv` 和 `.json`檔案
@@ -36,6 +37,18 @@
 - **🌐 雙端支援（純網頁版 + Python PyQt6 桌面版）**：
   - **網頁版**：零安裝，打開瀏覽器即可直接讀取 Excel 進行處理（資料完全在本機瀏覽器處理，不傳送至伺服器，安全無虞）
   - **桌面版**：提供 Python GUI 程式碼與打包 `.exe` 指南
+ 
+*v1.2.0*
+
+- **📱 RWD 響應式介面設計**：
+  - 全面優化主介面
+  - 設定對話框與歷史紀錄檢視視窗，支援各種尺寸的行動裝置與桌機操作
+- **🚀 自動化 CI/CD 部署**:
+  - 導入 GitHub Actions 與 GitHub Pages，讓網頁版程式碼推播後即可自動發布更新
+- **📊 欄位彈性與一致性對應**：
+  - 全面整合 `studentMec`（學號/項次）、`studentName`（中文姓名）、`englishName`（英文名）與 `BookCount(月份)` 讀本追蹤欄位
+- **⚙️ 本機與歷史資料保存**：
+  - 延續穩定可靠的 LocalStorage 狀態管理與歷史紀錄備份功能，換裝置也不怕資料丟失
 
 ---
 
