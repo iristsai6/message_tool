@@ -13,41 +13,19 @@ const PlusIcon = ({size=24, className=""}) => (<svg width={size} height={size} v
 const XIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>);
 const HelpCircleIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>);
 const DownloadIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>);
+const LinkIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>);
+const BookOpenIcon = ({size=24, className=""}) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>);
 
-// --- 預設資料 ---
+// --- 預設資料 (v2.0.0 班級群組與 {BookScore} 變數) ---
 const defaultStandards = {
-    "150TH": { test: 85, book: 6 },
-    "200TH": { test: 80, book: 4 }
+    "150TH": { test: 85, book: 6, note: "進階班" },
+    "200TH": { test: 80, book: 4, note: "基礎班" }
 };
 
 const defaultTemplates = {
-    "預設英文學習狀況回報": "家長您好，和您分享孩子近期的英文學習狀況。\n\n{studentName}最近三次小考成績從 70 分、80 分進步到{test_score} 分，單字掌握比之前穩定；課堂上也開始能用完整句子回答問題。\n\n目前需要加強的是\n\n🔺 {加強項目}。\n🔺 閱讀提升一個level的小說。\n🔺 本班講師規定目標，目前累積到{BookCount}分！\n\n另外，本週有一項錄音尚未繳交。\n📍老師檢查方式會先確認完成狀況，再檢查發音與流暢度。\n\n我們已與講師確認，接下來會先帶孩子示範一次故事摘要，與朗讀。請孩子於下週上課前完成小說閱讀及補交錄音。",
+    "預設英文學習狀況回報": "家長您好，和您分享孩子近期的英文學習狀況。\n\n{studentName}最近三次小考成績從 70 分、80 分進步到{test_score} 分，單字掌握比之前穩定；課堂上也開始能用完整句子回答問題。\n\n目前需要加強的是\n\n🔺 {加強項目}。\n🔺 閱讀提升一個level的小說。\n🔺 本班講師規定目標，目前累積到{BookScore}分！\n\n另外，本週有一項錄音尚未繳交。\n📍老師檢查方式會先確認完成狀況，再檢查發音與流暢度。\n\n我們已與講師確認，接下來會先帶孩子示範一次故事摘要，與朗讀。請孩子於下週上課前完成小說閱讀及補交錄音。",
     "群發訊息": "家長您好，提醒您{studentName}本週須參加{class}大會考唷！逾時十分鐘則不予入場考試!!",
-    "短版提醒通知": "家長您好，提醒您孩子本週英文小考成績為 {test_score} 分，小說分數為 {BookCount} 分，尚未達到班級標準，再請協助提醒孩子完成進度與複習唷！"
-};
-
-// --- 工具函式 ---
-const parseStandardsStr = (str) => {
-    const stds = {};
-    if (!str.trim()) return stds;
-    const parts = str.split(',');
-    parts.forEach(part => {
-        if (part.includes(':')) {
-            const [cls, vals] = part.split(':');
-            if (vals && vals.includes('/')) {
-                const [test, book] = vals.split('/');
-                stds[cls.trim()] = {
-                    test: parseFloat(test.trim()) || 0,
-                    book: parseFloat(book.trim()) || 0
-                };
-            }
-        }
-    });
-    return stds;
-};
-
-const standardsToStr = (stds) => {
-    return Object.entries(stds).map(([cls, val]) => `${cls}:${val.test}/${val.book}`).join(', ');
+    "短版提醒通知": "家長您好，提醒您孩子本週英文小考成績為 {test_score} 分，小說分數為 {BookScore} 分，尚未達到班級標準，再請協助提醒孩子完成進度與複習唷！"
 };
 
 // --- 聚光燈引導式教學彈窗組件 ---
@@ -272,9 +250,8 @@ function SpotlightTourModal({ onClose }) {
     );
 }
 
-// --- 主應用程式組件 ---
+// --- 主應用程式 ---
 function App() {
-    // --- 狀態管理 ---
     const [standards, setStandards] = useState(defaultStandards);
     const [templates, setTemplates] = useState(defaultTemplates);
     
@@ -293,14 +270,21 @@ function App() {
     const [fileName, setFileName] = useState("");
     const [results, setResults] = useState([]);
     const [activeClassTab, setActiveClassTab] = useState("ALL");
+
+    // 縮網址小工具狀態 (v2.0.0)
+    const [longUrl, setLongUrl] = useState("");
+    const [shortUrl, setShortUrl] = useState("");
+    const [isShortening, setIsShortening] = useState(false);
     
+    // 彈窗狀態
     const [showSettings, setShowSettings] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
+    const [showHelp, setShowHelp] = useState(false);
     const [showTour, setShowTour] = useState(false);
 
     const fileInputRef = useRef(null);
 
-    // --- 初始化從 LocalStorage 讀取資料與首次導覽判斷 ---
+    // --- 初始化從 LocalStorage 讀取資料 ---
     useEffect(() => {
         const savedStandards = localStorage.getItem('app_standards');
         const savedTemplates = localStorage.getItem('app_templates');
@@ -320,8 +304,8 @@ function App() {
             }
         }
 
-        // 首次開啟自動顯示聚光燈導覽
-        const hasSeenTour = localStorage.getItem('app_seen_tour');
+        // 初次開啟自動彈出聚光燈導覽
+        const hasSeenTour = localStorage.getItem('app_seen_tour_v2');
         if (!hasSeenTour) {
             const timer = setTimeout(() => setShowTour(true), 400);
             return () => clearTimeout(timer);
@@ -330,15 +314,33 @@ function App() {
 
     const handleCloseTour = () => {
         setShowTour(false);
-        localStorage.setItem('app_seen_tour', 'true');
+        localStorage.setItem('app_seen_tour_v2', 'true');
     };
 
-    // --- 匯出標準 Excel 範本 ---
-    const handleExportSampleExcel = () => {
-        if (!window.XLSX) {
-            alert("Excel 處理模組尚未載入完成，請稍後再試。");
-            return;
+    // --- 防阻擋複製文字 ---
+    const executeCopy = async (text) => {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (error) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                alert("複製失敗，請檢查瀏覽器權限或手動複製。");
+            }
+            document.body.removeChild(textArea);
         }
+    };
+
+    // --- 輸出 / 複製 Excel 範本 (v2.0.0) ---
+    const handleExportSampleExcel = async () => {
         const sampleRows = [
             {
                 studentMec: "1001",
@@ -346,7 +348,7 @@ function App() {
                 studentName: "王小明",
                 englishName: "Kevin",
                 test_score: 78,
-                [`BookCount(${month})`]: 4,
+                [`BookScore(${month})`]: 4,
                 "加強項目": "單字拼寫與句型結構"
             },
             {
@@ -355,14 +357,55 @@ function App() {
                 studentName: "陳小美",
                 englishName: "Amy",
                 test_score: 92,
-                [`BookCount(${month})`]: 2,
+                [`BookScore(${month})`]: 2,
                 "加強項目": "小說閱讀進度"
             }
         ];
-        const ws = window.XLSX.utils.json_to_sheet(sampleRows);
-        const wb = window.XLSX.utils.book_new();
-        window.XLSX.utils.book_append_sheet(wb, ws, "學員成績範本");
-        window.XLSX.writeFile(wb, `學員成績範本_${month}月.xlsx`);
+
+        // 同步複製 TSV 表頭與範例供直接 Ctrl+V 貼上 Excel
+        const headers = Object.keys(sampleRows[0]);
+        const tsvText = [
+            headers.join('\t'),
+            ...sampleRows.map(r => headers.map(h => r[h]).join('\t'))
+        ].join('\n');
+        await executeCopy(tsvText);
+
+        if (window.XLSX) {
+            const ws = window.XLSX.utils.json_to_sheet(sampleRows);
+            const wb = window.XLSX.utils.book_new();
+            window.XLSX.utils.book_append_sheet(wb, ws, "學員成績範本");
+            window.XLSX.writeFile(wb, `學員成績範本_${month}月.xlsx`);
+        } else {
+            alert("已將標準表頭格式複製到剪貼簿，可直接貼上 Excel！");
+        }
+    };
+
+    // --- 縮網址 URL 小工具 (v2.0.0) ---
+    const handleShortenUrl = async () => {
+        const trimmed = longUrl.trim();
+        if (!trimmed) return alert("請先輸入欲縮短的網址！");
+        const formattedUrl = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+
+        setIsShortening(true);
+        try {
+            const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}`);
+            const data = await res.json();
+            if (data.shorturl) {
+                setShortUrl(data.shorturl);
+                await executeCopy(data.shorturl);
+            } else {
+                throw new Error(data.errormessage || "縮網址轉換失敗");
+            }
+        } catch (err) {
+            alert(`縮網址服務暫時無法連線（${err.message}），請確認網址格式是否正確。`);
+        } finally {
+            setIsShortening(false);
+        }
+    };
+
+    const handleInsertShortUrl = () => {
+        if (!shortUrl) return;
+        setTemplateText(prev => `${prev}\n${shortUrl}`);
     };
 
     // --- 模板變更處理 ---
@@ -401,9 +444,10 @@ function App() {
             return;
         }
         
-        // 動態對應選擇月份的 BookCount(月份) / BookScore(月份)
-        const bookCountCol = `bookcount(${month})`.toLowerCase();
+        // 支援 BookScore(月份) 並向下相容 BookCount(月份) / book_score(月份)
         const bookScoreCol = `bookscore(${month})`.toLowerCase();
+        const bookCountCol = `bookcount(${month})`.toLowerCase();
+        const legacyBookCol = `book_score(${month})`.toLowerCase();
         const defT = parseFloat(defaultTest) || 85.0;
         const defB = parseFloat(defaultBook) || 6.0;
 
@@ -411,14 +455,15 @@ function App() {
         const pattern = /__(.*?)__|{(.*?)}/g;
 
         excelData.forEach((row, index) => {
-            // 轉小寫欄位以便統一處理
             const lowerRow = {};
             Object.keys(row).forEach(k => lowerRow[k.toLowerCase().trim()] = row[k]);
 
             const rawTest = lowerRow['test_score'];
             const testScore = parseFloat(rawTest) || 0.0;
 
-            const rawBook = lowerRow[bookCountCol] !== undefined ? lowerRow[bookCountCol] : lowerRow[bookScoreCol];
+            const rawBook = lowerRow[bookScoreCol] !== undefined
+                ? lowerRow[bookScoreCol]
+                : (lowerRow[bookCountCol] !== undefined ? lowerRow[bookCountCol] : lowerRow[legacyBookCol]);
             const bookScore = parseFloat(rawBook) || 0.0;
 
             const studentClass = String(lowerRow['class'] || '預設班級').trim();
@@ -429,7 +474,6 @@ function App() {
             const isTestPassed = testScore >= passTestScore;
             const isBookPassed = bookScore >= passBookScore;
 
-            // 篩選邏輯
             let shouldKeep = false;
             if (isBroadcast) {
                 shouldKeep = true;
@@ -449,13 +493,15 @@ function App() {
             let currentText = templateText;
             currentText = currentText.replace(pattern, (match, p1, p2) => {
                 let varName = (p1 || p2).trim().toLowerCase();
-                if (varName.includes('bookcount') || varName.includes('bookscore')) {
+                if (varName.includes('bookscore') || varName.includes('bookcount') || varName.includes('book_score')) {
                     return rawBook !== undefined ? String(rawBook) : '0';
+                }
+                if (varName === 'name') {
+                    return lowerRow['studentname'] !== undefined ? String(lowerRow['studentname']) : (lowerRow['name'] || '');
                 }
                 return lowerRow[varName] !== undefined ? String(lowerRow[varName]) : '';
             });
 
-            // 擷取指定欄位變數
             const studentName = String(lowerRow['studentname'] || lowerRow['name'] || `學員 ${index + 1}`).trim();
             const studentMec = lowerRow['studentmec'] || (index + 1);
             const englishName = lowerRow['englishname'] || '';
@@ -476,14 +522,13 @@ function App() {
         setResults(newResults);
     };
 
-    // 當參數或檔案改變時，自動重新計算
     useEffect(() => {
         if (excelData.length > 0) {
             reloadData();
         }
     }, [excelData, templateText, month, defaultTest, defaultBook, isBroadcast, filterTest, filterBook, standards]);
 
-    // --- 班級分群頁籤計算 ---
+    // --- 班級群組頁籤 ---
     const classTabs = useMemo(() => {
         const classes = Array.from(new Set(results.map(r => r.studentClass)));
         return ["ALL", ...classes];
@@ -494,34 +539,9 @@ function App() {
         return results.filter(r => r.studentClass === activeClassTab);
     }, [results, activeClassTab]);
 
-    // --- 複製文字與備用方案 (Fallback) ---
-    const executeCopy = async (text) => {
-        try {
-            await navigator.clipboard.writeText(text);
-        } catch (error) {
-            console.warn("Clipboard API blocked, using fallback:", error);
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-999999px";
-            textArea.style.top = "-999999px";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-            } catch (err) {
-                console.error('Fallback copy failed', err);
-                alert("複製失敗，請檢查瀏覽器權限或手動複製。");
-            }
-            document.body.removeChild(textArea);
-        }
-    };
-
-    // --- 複製與標記功能 ---
     const handleCopy = async (targetItem) => {
         await executeCopy(targetItem.generatedText);
-        setResults(prev => prev.map(item => 
+        setResults(prev => prev.map(item =>
             item === targetItem ? { ...item, processed: true } : item
         ));
     };
@@ -533,7 +553,6 @@ function App() {
         alert(`已將目前顯示的 ${displayedResults.length} 筆生成內容複製到剪貼簿！`);
     };
 
-    // --- 儲存歷史紀錄 ---
     const saveToLocalDB = () => {
         if (results.length === 0) {
             alert("目前沒有可儲存的生成結果！");
@@ -554,7 +573,6 @@ function App() {
         }
     };
 
-    // --- 標題動態產生 ---
     const rightTitle = useMemo(() => {
         if (isBroadcast) return "2. 全體學生群發名單與即時確認區 (群發模式)：";
         if (filterTest && filterBook) return "2. 未達標學生名單 (小考或小說未達標)：";
@@ -566,15 +584,26 @@ function App() {
     return (
         <div className="h-full flex flex-col p-4">
             {/* Header */}
-            <header className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-700 shrink-0">
+            <header className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-700 shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-amber-500 flex items-center justify-center text-slate-900 font-bold">🍎</div>
-                    <h1 className="text-xl font-bold text-white tracking-wide">批次模板生成小工具</h1>
+                    <img
+                        src="icon.png"
+                        onError={(e) => { e.target.onerror = null; e.target.src = "https://img.icons8.com/color/48/minecraft-golden-apple.png"; }}
+                        alt="icon"
+                        className="w-8 h-8 rounded object-contain"
+                    />
+                    <h1 className="text-xl font-bold text-white tracking-wide flex items-center gap-2">
+                        智慧批次模板生成小工具
+                        <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                            v2.0.0
+                        </span>
+                    </h1>
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex flex-wrap items-center gap-2">
                     <button
                         onClick={handleExportSampleExcel}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs font-semibold transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-colors"
                     >
                         <DownloadIcon size={15} /> 輸出Excel 範本
                     </button>
@@ -582,7 +611,13 @@ function App() {
                         onClick={() => setShowTour(true)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/40 text-xs font-bold transition-colors"
                     >
-                        <HelpCircleIcon size={16} /> 操作導覽
+                        <HelpCircleIcon size={15} /> 聚光燈導覽
+                    </button>
+                    <button
+                        onClick={() => setShowHelp(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 text-xs font-semibold transition-colors"
+                    >
+                        <BookOpenIcon size={15} /> 操作說明 & Q&A
                     </button>
                 </div>
             </header>
@@ -591,12 +626,15 @@ function App() {
             <div className="flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden">
                 
                 {/* 左側面板 */}
-                <div className="w-full lg:w-96 flex flex-col gap-5 shrink-0 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="w-full lg:w-96 flex flex-col gap-4 shrink-0 overflow-y-auto pr-2 custom-scrollbar">
                     
-                    {/* 檔案操作區 */}
-                    <div id="tour-step-upload" className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-3.5 flex flex-col gap-2.5">
-                        <div className="text-xs text-slate-400 truncate">
-                            {fileName ? `已選擇：${fileName}` : "尚未選擇 Excel 檔案"}
+                    {/* 步驟 1：檔案操作區 */}
+                    <div id="tour-step-upload" className="bg-slate-800/70 border border-slate-700 rounded-xl p-3.5 flex flex-col gap-2.5">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">1. 成績檔案匯入</span>
+                            <span className="text-xs text-amber-400/90 truncate max-w-[180px]">
+                                {fileName ? fileName : "尚未選擇檔案"}
+                            </span>
                         </div>
                         <div className="flex gap-2">
                             <button 
@@ -616,9 +654,9 @@ function App() {
                         </div>
                     </div>
 
-                    {/* 參數設定區 */}
+                    {/* 步驟 2：參數設定與過濾條件 */}
                     <div id="tour-step-params" className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col gap-3.5">
-                        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">參數設定與過濾條件</h3>
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">2. 參數設定與過濾條件</h3>
                         
                         <div className="flex items-center justify-between gap-2">
                             <label className="text-sm">對應讀本月份:</label>
@@ -639,7 +677,7 @@ function App() {
                             <input type="number" className="bg-slate-700 border border-slate-600 rounded p-1.5 w-full text-sm outline-none" value={defaultBook} onChange={e => setDefaultBook(e.target.value)} />
                         </div>
 
-                        {/* 膠囊切換按鈕區 */}
+                        {/* 膠囊切換按鈕區 (v2.0.0) */}
                         <div className="flex flex-wrap gap-2 mt-1">
                             <button
                                 type="button"
@@ -654,9 +692,10 @@ function App() {
                             </button>
                             <button
                                 type="button"
+                                disabled={isBroadcast}
                                 onClick={() => setFilterTest(v => !v)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                                    filterTest
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all disabled:opacity-40 ${
+                                    filterTest && !isBroadcast
                                         ? 'bg-blue-500 text-white border-blue-400 shadow-sm'
                                         : 'bg-slate-900/70 text-slate-400 border-slate-700 hover:border-slate-500'
                                 }`}
@@ -665,9 +704,10 @@ function App() {
                             </button>
                             <button
                                 type="button"
+                                disabled={isBroadcast}
                                 onClick={() => setFilterBook(v => !v)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                                    filterBook
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all disabled:opacity-40 ${
+                                    filterBook && !isBroadcast
                                         ? 'bg-blue-500 text-white border-blue-400 shadow-sm'
                                         : 'bg-slate-900/70 text-slate-400 border-slate-700 hover:border-slate-500'
                                 }`}
@@ -684,9 +724,9 @@ function App() {
                         </button>
                     </div>
 
-                    {/* 模板選擇與編輯 */}
+                    {/* 步驟 3：模板選擇與編輯 */}
                     <div id="tour-step-template" className="flex flex-col gap-2 rounded-xl">
-                        <label className="font-bold text-slate-300 text-sm">選擇訊息模板：</label>
+                        <label className="font-bold text-slate-300 text-sm">3. 選擇訊息模板：</label>
                         <select 
                             className="bg-slate-800 border border-slate-600 rounded-lg p-2 text-sm text-slate-200 outline-none focus:border-amber-500"
                             value={currentTemplateName}
@@ -695,14 +735,56 @@ function App() {
                             {Object.keys(templates).map(k => <option key={k} value={k}>{k}</option>)}
                         </select>
                         <textarea 
-                            className="bg-slate-800 border border-slate-600 rounded-lg p-3 text-sm text-slate-200 h-44 resize-none outline-none focus:border-amber-500 mt-1 custom-scrollbar"
+                            className="bg-slate-800 border border-slate-600 rounded-lg p-3 text-sm text-slate-200 h-40 resize-none outline-none focus:border-amber-500 mt-1 custom-scrollbar"
                             value={templateText}
                             onChange={(e) => setTemplateText(e.target.value)}
                         />
                     </div>
 
+                    {/* 縮網址 URL 小工具 (v2.0.0) */}
+                    <div className="bg-slate-800/70 border border-slate-700 rounded-xl p-3.5 flex flex-col gap-2.5">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                            <LinkIcon size={14} className="text-amber-400" /> 縮網址 URL 小工具
+                        </div>
+                        <div className="flex gap-1.5">
+                            <input
+                                type="text"
+                                placeholder="貼上長網址 (例如 Google 表單)..."
+                                className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-amber-500"
+                                value={longUrl}
+                                onChange={e => setLongUrl(e.target.value)}
+                            />
+                            <button
+                                onClick={handleShortenUrl}
+                                disabled={isShortening}
+                                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-900 text-xs font-bold transition-colors shrink-0"
+                            >
+                                {isShortening ? "處理中" : "縮短"}
+                            </button>
+                        </div>
+                        {shortUrl && (
+                            <div className="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-700 rounded-lg px-2.5 py-1.5">
+                                <span className="text-xs text-emerald-400 font-mono truncate">{shortUrl}</span>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                    <button
+                                        onClick={() => executeCopy(shortUrl)}
+                                        className="text-[11px] px-2 py-0.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200"
+                                    >
+                                        複製
+                                    </button>
+                                    <button
+                                        onClick={handleInsertShortUrl}
+                                        className="text-[11px] px-2 py-0.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40"
+                                    >
+                                        插入模板
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     {/* 歷史紀錄操作區 */}
-                    <div className="flex flex-col gap-2.5 pb-2">
+                    <div className="flex flex-col gap-2 pb-2">
                         <button 
                             onClick={saveToLocalDB}
                             className="w-full flex items-center justify-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/50 font-semibold py-2.5 rounded-lg text-sm transition-colors"
@@ -719,7 +801,7 @@ function App() {
                     </div>
                 </div>
 
-                {/* 右側結果表格 */}
+                {/* 步驟 4：右側結果表格 */}
                 <div id="tour-step-results" className="flex-1 flex flex-col overflow-hidden bg-slate-800 border border-slate-700 rounded-xl">
                     <div className="p-4 border-b border-slate-700 bg-slate-800/50 flex flex-wrap items-center justify-between gap-3">
                         <span className="font-bold text-white">{rightTitle}</span>
@@ -748,7 +830,7 @@ function App() {
                         <table className="w-full text-left border-collapse text-sm min-w-[800px] md:min-w-full">
                             <thead className="sticky top-0 bg-slate-900 border-b border-slate-700 shadow-md z-10">
                                 <tr>
-                                    <th className="p-3 w-16 text-center text-slate-400">學號/項次</th>
+                                    <th className="p-3 w-20 text-center text-slate-400">學號/項次</th>
                                     <th className="p-3 w-24 text-slate-400">班級</th>
                                     <th className="p-3 w-40 text-slate-400">學員姓名 (英)</th>
                                     <th className="p-3 w-64 text-slate-400">小考/小說成績</th>
@@ -802,7 +884,7 @@ function App() {
                                                     )}
                                                 </td>
                                             </tr>
-                                        )
+                                        );
                                     })
                                 )}
                             </tbody>
@@ -839,6 +921,10 @@ function App() {
                 <HistoryModal onClose={() => setShowHistory(false)} />
             )}
 
+            {showHelp && (
+                <HelpModal onClose={() => setShowHelp(false)} onStartTour={() => { setShowHelp(false); setShowTour(true); }} />
+            )}
+
             {showTour && (
                 <SpotlightTourModal onClose={handleCloseTour} />
             )}
@@ -846,14 +932,50 @@ function App() {
     );
 }
 
-// --- 設定對話框組件 ---
+// --- 視覺化班級群組與模板管理對話框 (v2.0.0) ---
 function SettingsModal({ standards, templates, onClose, onSave }) {
     const firstTplKey = Object.keys(templates)[0] || "";
-    const [stdStr, setStdStr] = useState(standardsToStr(standards));
+    const [localStds, setLocalStds] = useState(standards);
+    const [newClassCode, setNewClassCode] = useState("");
+    const [newClassNote, setNewClassNote] = useState("");
+    const [newClassTest, setNewClassTest] = useState("85");
+    const [newClassBook, setNewClassBook] = useState("6");
+
     const [localTpls, setLocalTpls] = useState(templates);
     const [selectedTpl, setSelectedTpl] = useState(firstTplKey);
     const [tplNameInput, setTplNameInput] = useState(firstTplKey);
     const [tplContentInput, setTplContentInput] = useState(templates[firstTplKey] || "");
+
+    const handleAddGroup = () => {
+        const cls = newClassCode.trim();
+        if (!cls) return alert("請輸入班級代碼（例如 300TH）！");
+        setLocalStds(prev => ({
+            ...prev,
+            [cls]: {
+                test: parseFloat(newClassTest) || 0,
+                book: parseFloat(newClassBook) || 0,
+                note: newClassNote.trim()
+            }
+        }));
+        setNewClassCode("");
+        setNewClassNote("");
+    };
+
+    const handleUpdateGroupScore = (cls, field, val) => {
+        setLocalStds(prev => ({
+            ...prev,
+            [cls]: {
+                ...prev[cls],
+                [field]: parseFloat(val) || 0
+            }
+        }));
+    };
+
+    const handleDeleteGroup = (cls) => {
+        const copy = { ...localStds };
+        delete copy[cls];
+        setLocalStds(copy);
+    };
 
     const handleSelectTpl = (name) => {
         setSelectedTpl(name);
@@ -872,34 +994,98 @@ function SettingsModal({ standards, templates, onClose, onSave }) {
     const handleDelete = () => {
         if (!selectedTpl) return;
         if (Object.keys(localTpls).length <= 1) return alert("至少需要保留一個模板！");
-        
         const newTpls = { ...localTpls };
         delete newTpls[selectedTpl];
         setLocalTpls(newTpls);
-        
         const firstKey = Object.keys(newTpls)[0];
         handleSelectTpl(firstKey);
     };
 
     return (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-3xl flex flex-col overflow-hidden shadow-2xl">
                 <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2"><SettingsIcon size={20} className="text-amber-400"/> 群組標準與模板管理</h2>
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2"><SettingsIcon size={20} className="text-amber-400"/> 班級群組與模板管理 (v2.0.0)</h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-white"><XIcon size={24} /></button>
                 </div>
                 
-                <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-6 max-h-[60vh]">
-                    {/* 分數設定 */}
-                    <div>
-                        <label className="block font-bold text-slate-200 mb-2">📊 各班級獨立標準設定 (格式: 班級:小考成績/小說分數)：</label>
-                        <input 
-                            type="text" 
-                            className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 outline-none focus:border-amber-500"
-                            value={stdStr}
-                            onChange={(e) => setStdStr(e.target.value)}
-                        />
-                        <p className="text-xs text-slate-500 mt-2">範例：150TH:85/6, 200TH:80/4</p>
+                <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-6 max-h-[68vh]">
+                    {/* 視覺化班級群組設定 */}
+                    <div className="flex flex-col gap-3">
+                        <label className="block font-bold text-slate-200">📊 班級群組與達標門檻設定：</label>
+                        
+                        {/* 新增群組列 */}
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-slate-900/70 p-3 rounded-xl border border-slate-700">
+                            <input
+                                type="text"
+                                placeholder="班級代碼 (如 300TH)"
+                                className="bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-amber-500"
+                                value={newClassCode}
+                                onChange={e => setNewClassCode(e.target.value)}
+                            />
+                            <input
+                                type="text"
+                                placeholder="群組備註 (選填)"
+                                className="bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-amber-500"
+                                value={newClassNote}
+                                onChange={e => setNewClassNote(e.target.value)}
+                            />
+                            <input
+                                type="number"
+                                placeholder="小考標準"
+                                className="bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-amber-500"
+                                value={newClassTest}
+                                onChange={e => setNewClassTest(e.target.value)}
+                            />
+                            <input
+                                type="number"
+                                placeholder="小說標準"
+                                className="bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-amber-500"
+                                value={newClassBook}
+                                onChange={e => setNewClassBook(e.target.value)}
+                            />
+                            <button
+                                onClick={handleAddGroup}
+                                className="col-span-2 sm:col-span-1 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors"
+                            >
+                                <PlusIcon size={14} /> 新增群組
+                            </button>
+                        </div>
+
+                        {/* 已建立群組卡片清單 */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {Object.entries(localStds).map(([cls, val]) => (
+                                <div key={cls} className="flex items-center justify-between gap-2 bg-slate-900/50 border border-slate-700 rounded-xl p-3">
+                                    <div className="min-w-0">
+                                        <div className="font-bold text-amber-400 text-sm truncate">{cls}</div>
+                                        {val.note && <div className="text-[11px] text-slate-400 truncate">{val.note}</div>}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <span className="text-[11px] text-slate-400">小考</span>
+                                        <input
+                                            type="number"
+                                            className="w-14 bg-slate-800 border border-slate-600 rounded px-1.5 py-1 text-xs text-center text-white"
+                                            value={val.test}
+                                            onChange={e => handleUpdateGroupScore(cls, 'test', e.target.value)}
+                                        />
+                                        <span className="text-[11px] text-slate-400">小說</span>
+                                        <input
+                                            type="number"
+                                            className="w-12 bg-slate-800 border border-slate-600 rounded px-1.5 py-1 text-xs text-center text-white"
+                                            value={val.book}
+                                            onChange={e => handleUpdateGroupScore(cls, 'book', e.target.value)}
+                                        />
+                                        <button
+                                            onClick={() => handleDeleteGroup(cls)}
+                                            className="p-1.5 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors"
+                                            title="刪除群組"
+                                        >
+                                            <TrashIcon size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     <hr className="border-slate-700"/>
@@ -907,7 +1093,7 @@ function SettingsModal({ standards, templates, onClose, onSave }) {
                     {/* 模板管理 */}
                     <div className="flex flex-col gap-3">
                         <label className="block font-bold text-slate-200">📝 訊息模板管理區：</label>
-                        <div className="flex flex-col md:flex-row gap-4 h-auto md:h-64">
+                        <div className="flex flex-col md:flex-row gap-4 h-auto md:h-60">
                             <div className="w-full md:w-1/3 h-32 md:h-auto border border-slate-700 rounded-lg overflow-y-auto custom-scrollbar bg-slate-900/50 p-2">
                                 {Object.keys(localTpls).map(name => (
                                     <div 
@@ -919,7 +1105,7 @@ function SettingsModal({ standards, templates, onClose, onSave }) {
                                     </div>
                                 ))}
                             </div>
-                            <div className="w-full md:w-2/3 flex flex-col gap-2 mt-4 md:mt-0">
+                            <div className="w-full md:w-2/3 flex flex-col gap-2 mt-2 md:mt-0">
                                 <input 
                                     type="text" placeholder="新模板名稱" 
                                     className="bg-slate-900 border border-slate-600 rounded-lg p-2 text-slate-200 text-sm outline-none focus:border-amber-500"
@@ -941,7 +1127,60 @@ function SettingsModal({ standards, templates, onClose, onSave }) {
 
                 <div className="p-5 border-t border-slate-700 flex justify-end gap-3 bg-slate-900">
                     <button onClick={onClose} className="px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors font-semibold">取消</button>
-                    <button onClick={() => onSave(parseStandardsStr(stdStr), localTpls)} className="px-6 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold transition-colors shadow-lg">儲存設定</button>
+                    <button onClick={() => onSave(localStds, localTpls)} className="px-6 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold transition-colors shadow-lg">儲存設定</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// --- 操作說明與 Q&A 對話框 (v2.0.0) ---
+function HelpModal({ onClose, onStartTour }) {
+    return (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
+                <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        🚨 操作說明與 Q&A
+                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">v2.0.0</span>
+                    </h2>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white"><XIcon size={24} /></button>
+                </div>
+
+                <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 text-sm text-slate-300 max-h-[65vh]">
+                    <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+                        <h3 className="font-bold text-amber-400 mb-2">📌 Excel 欄位對應表</h3>
+                        <ul className="list-disc list-inside space-y-1 text-xs text-slate-300">
+                            <li><code>studentMec</code>：學員編號或項次</li>
+                            <li><code>class</code>：班級代碼（對應「群組與模板管理」設定之門檻）</li>
+                            <li><code>studentName</code>：學員中文姓名（模板變數 <code>{"{studentName}"}</code>）</li>
+                            <li><code>englishName</code>：學員英文姓名（選填）</li>
+                            <li><code>test_score</code>：小考成績（模板變數 <code>{"{test_score}"}</code>）</li>
+                            <li><code>BookScore(月份)</code>：當月小說讀本分數，如 <code>BookScore(11)</code>（模板變數 <code>{"{BookScore}"}</code>）</li>
+                        </ul>
+                    </div>
+
+                    <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
+                        <h3 className="font-bold text-emerald-400 mb-2">✨ v2.0.0 版本更新亮點</h3>
+                        <ul className="list-disc list-inside space-y-1 text-xs text-slate-300">
+                            <li>支援聚光燈互動教學導覽，隨時可點擊右上角「聚光燈導覽」重溫操作流程。</li>
+                            <li>整合「縮網址 URL 小工具」，縮短後自動複製並可一鍵插入通知模板。</li>
+                            <li>支援「輸出Excel 範本」，點擊同時下載 <code>.xlsx</code> 並複製標準表頭。</li>
+                            <li>支援班級群組視覺化管理與右側分群頁籤快速篩選。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="p-4 border-t border-slate-700 bg-slate-900 flex justify-between items-center">
+                    <button
+                        onClick={onStartTour}
+                        className="px-4 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-xs font-bold transition-colors"
+                    >
+                        🔦 啟動聚光燈互動導覽
+                    </button>
+                    <button onClick={onClose} className="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold">
+                        關閉
+                    </button>
                 </div>
             </div>
         </div>
@@ -984,7 +1223,6 @@ function HistoryModal({ onClose }) {
                 </div>
                 
                 <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                    {/* 左側列表 */}
                     <div className="w-full md:w-1/3 h-1/3 md:h-full border-b md:border-b-0 md:border-r border-slate-700 overflow-y-auto custom-scrollbar p-3 bg-slate-900/30">
                         <div className="font-bold text-slate-300 mb-3 ml-1 text-sm">已儲存的歷史批次紀錄：</div>
                         {history.length === 0 ? (
@@ -1004,7 +1242,6 @@ function HistoryModal({ onClose }) {
                         )}
                     </div>
                     
-                    {/* 右側內容 */}
                     <div className="w-full md:w-2/3 h-2/3 md:h-full p-4 bg-slate-900">
                         <textarea 
                             readOnly
