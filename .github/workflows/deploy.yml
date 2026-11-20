@@ -1,6 +1,5 @@
-name: Deploy to GitHub Pages
+name: Deploy static content to Pages
 
-# 觸發條件：當 main 分支有 push 動作，或手動點擊執行時觸發
 on:
   push:
     branches: ["main"]
@@ -11,10 +10,9 @@ permissions:
   pages: write
   id-token: write
 
-# 確保同時間只有一個部署在執行
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -23,7 +21,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Pages
@@ -32,7 +30,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.' # 部署根目錄下的所有靜態檔案
+          path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment
