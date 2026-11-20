@@ -95,7 +95,7 @@ class HelpDialog(QDialog):
         <div style="font-family: 'Microsoft JhengHei', sans-serif; line-height: 1.6; font-size: 13px;">
             <h3 style="color:#d97706;">🏫 1. 班級群組管理與區分</h3>
             <ul>
-                <li><b>新增班級群組</b>：點擊左側「⚙️ 群組與模板管理」，可視覺化新增不同班級群組（如 <code>150TH</code>、<code>200TH</code>、<code>300TH</code>）並獨立設定小考與小說達標分數。</li>
+                <li><b>新增班級群組</b>：點擊左側「⚙️ 群組與模板管理」，可視覺化新增不同班級群組（如 <code>150TH</code>、<code>200TH</code>、<code>300TU</code>）並獨立設定小考與小說達標分數。</li>
                 <li><b>名單分群檢視</b>：右側名單上方提供「班級群組區分」按鈕列，可單獨檢視特定班級並一鍵複製該班級的所有通知訊息。</li>
             </ul>
             <hr>
@@ -224,7 +224,7 @@ class SettingsDialog(QDialog):
 
         add_bar = QHBoxLayout()
         self.new_cls_input = QLineEdit()
-        self.new_cls_input.setPlaceholderText("班級代碼 (如: 300TH)")
+        self.new_cls_input.setPlaceholderText("班級代碼 (如: 300TU)")
         self.new_note_input = QLineEdit()
         self.new_note_input.setPlaceholderText("群組備註 (如: 週六高階班)")
         self.new_test_input = QLineEdit("85")
@@ -357,7 +357,7 @@ class SettingsDialog(QDialog):
         self.sync_table_edits_to_dict()
         cls_code = self.new_cls_input.text().strip().upper()
         if not cls_code:
-            QMessageBox.warning(self, "提示", "請輸入班級代碼（例如：300TH）！")
+            QMessageBox.warning(self, "提示", "請輸入班級代碼（例如：300TU）！")
             return
         if cls_code in self.standards:
             QMessageBox.warning(self, "提示", f"班級群組「{cls_code}」已存在，請直接於表格內修改數值！")
