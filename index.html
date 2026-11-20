@@ -17,9 +17,9 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <!-- SheetJS (XLSX) CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- 引入自訂樣式表 -->
+    <!-- 自訂樣式表 -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-900 text-slate-200 selection:bg-amber-500 selection:text-slate-900 overflow-hidden h-screen w-full m-0">
@@ -27,7 +27,7 @@
     <!-- React 應用的掛載點 -->
     <div id="root" class="h-full w-full"></div>
 
-    <!-- 引入 React 邏輯腳本 (注意：若使用本地雙擊開啟，需透過 local server 或確認瀏覽器允許讀取本地 babel script) -->
+    <!-- React 邏輯腳本 -->
     <script type="text/babel" src="app.js"></script>
 </body>
 </html>
