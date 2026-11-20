@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 # 觸發條件：當 main 分支有 push 動作，或手動點擊執行時觸發
 on:
   push:
-    branches: ["main"] 
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -30,7 +30,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
           path: '.' # 部署根目錄下的所有靜態檔案
 
