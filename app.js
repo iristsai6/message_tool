@@ -63,7 +63,6 @@ function SpotlightTourModal({ onClose }) {
     const current = tourSteps[step];
     const isLastStep = step === tourSteps.length - 1;
 
-    // 計算並追蹤目標元素在畫面上的座標（支援視窗縮放與捲動即時更新）
     useEffect(() => {
         const updatePosition = () => {
             const el = document.getElementById(current.targetId);
@@ -100,7 +99,6 @@ function SpotlightTourModal({ onClose }) {
         };
     }, [step, current.targetId]);
 
-    // 計算彈窗的智慧閃避位置（確保在桌面與窄螢幕皆不遮住聚光燈且不超出畫面）
     const getPopoverStyle = () => {
         if (!targetRect) {
             return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 'min(360px, calc(100vw - 32px))' };
@@ -111,10 +109,8 @@ function SpotlightTourModal({ onClose }) {
         const estCardH = 265;
         const margin = 16;
 
-        // 桌面版寬螢幕 (>= 1024px)
         if (winW >= 1024) {
             if (targetRect.left < winW * 0.4) {
-                // 目標在左側欄 -> 彈窗放目標右側
                 const safeTop = Math.max(margin, Math.min(targetRect.top, winH - estCardH - margin));
                 const safeLeft = Math.min(targetRect.left + targetRect.width + 20, winW - cardW - margin);
                 return {
@@ -123,7 +119,6 @@ function SpotlightTourModal({ onClose }) {
                     width: `${cardW}px`
                 };
             } else {
-                // 目標在右側大表格 -> 彈窗放左側欄上方避免遮擋表格
                 const safeLeft = Math.max(margin, targetRect.left - cardW - 24);
                 return {
                     top: '50%',
@@ -134,20 +129,16 @@ function SpotlightTourModal({ onClose }) {
             }
         }
 
-        // 手機 / 平板窄螢幕 (< 1024px)：自動上下閃避
         const targetBottom = targetRect.top + targetRect.height;
         const spaceBelow = winH - targetBottom;
         const spaceAbove = targetRect.top;
 
         let topPos;
         if (spaceBelow >= estCardH + margin) {
-            // 目標下方空間足夠 -> 放目標正下方
             topPos = targetBottom + 14;
         } else if (spaceAbove >= estCardH + margin) {
-            // 目標上方空間足夠 -> 放目標正上方
             topPos = targetRect.top - estCardH - 14;
         } else {
-            // 若目標本身佔滿畫面（例如手機版的右側大表格）-> 靠畫面底部浮動顯示，確保不超出螢幕
             topPos = Math.max(margin, winH - estCardH - margin);
         }
 
@@ -161,7 +152,6 @@ function SpotlightTourModal({ onClose }) {
 
     return (
         <div className="fixed inset-0 z-50 overflow-hidden pointer-events-auto">
-            {/* 聚光燈亮框與四周暗幕（透過超大 box-shadow 實現自然挖空，亮框內部 100% 清晰） */}
             {targetRect ? (
                 <div
                     className="fixed rounded-xl border-2 border-amber-400 transition-all duration-300 ease-out pointer-events-none"
@@ -177,12 +167,10 @@ function SpotlightTourModal({ onClose }) {
                 <div className="fixed inset-0 bg-slate-950/80" />
             )}
 
-            {/* 導覽說明卡片 */}
             <div
                 style={getPopoverStyle()}
                 className="fixed z-10 bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ease-out"
             >
-                {/* 頂部步驟標示 */}
                 <div className="px-5 pt-4 pb-2 flex items-center justify-between">
                     <span className="text-xs font-bold tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
                         功能導覽 {step + 1} / {tourSteps.length}
@@ -192,7 +180,6 @@ function SpotlightTourModal({ onClose }) {
                     </button>
                 </div>
 
-                {/* 步驟圖示與文字說明 */}
                 <div className="px-5 py-3">
                     <div className="flex items-center gap-2.5 mb-2">
                         <span className="text-2xl">{current.icon}</span>
@@ -203,7 +190,6 @@ function SpotlightTourModal({ onClose }) {
                     </p>
                 </div>
 
-                {/* 進度點點（達成以黃色呈現） */}
                 <div className="flex items-center justify-center gap-2 py-2.5">
                     {tourSteps.map((_, idx) => (
                         <button
@@ -219,7 +205,6 @@ function SpotlightTourModal({ onClose }) {
                     ))}
                 </div>
 
-                {/* 底部操作列：左側略過鍵（淺灰色小字）+ 右側上/下一步 */}
                 <div className="px-5 py-3 bg-slate-900/90 border-t border-slate-700 flex items-center justify-between">
                     <button
                         onClick={onClose}
@@ -362,7 +347,6 @@ function App() {
             }
         ];
 
-        // 同步複製 TSV 表頭與範例供直接 Ctrl+V 貼上 Excel
         const headers = Object.keys(sampleRows[0]);
         const tsvText = [
             headers.join('\t'),
@@ -614,10 +598,10 @@ function App() {
                         <HelpCircleIcon size={15} /> 聚光燈導覽
                     </button>
                     <button 
-                            onClick={() => setShowHelp(true)}
-                            className="ml-auto flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/50 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
-                            
-                            <HelpModal onClose={15} /> 操作說明 & Q&A
+                        onClick={() => setShowHelp(true)}
+                        className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/50 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                    >
+                        <BookOpenIcon size={15} /> 操作說明 & Q&A
                     </button>
                 </div>
             </header>
@@ -922,7 +906,10 @@ function App() {
             )}
 
             {showHelp && (
-                <HelpModal onClose={() => setShowHelp(false)} onStartTour={() => { setShowHelp(false); setShowTour(true); }} />
+                <HelpModal 
+                    onClose={() => setShowHelp(false)} 
+                    onStartTour={() => { setShowHelp(false); setShowTour(true); }} 
+                />
             )}
 
             {showTour && (
@@ -1134,22 +1121,111 @@ function SettingsModal({ standards, templates, onClose, onSave }) {
     );
 }
 
-// --- 操作說明與 Q&A 對話框 (v2.0.0) ---
+// --- 操作說明與常見問題 Q&A 對話框 (v2.0.0 完整版) ---
 function HelpModal({ onClose, onStartTour }) {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [openIndex, setOpenIndex] = useState(0);
+
+    const faqList = [
+        {
+            q: "Q1：為什麼切換「對應讀本月份」或重新載入後，小說分數顯示為 0 或空白？",
+            a: "請確認 Excel 標題列包含 BookScore(月份)（例如 BookScore(11)），且訊息模板內使用 {BookScore} 變數。若瀏覽器曾儲存過舊版模板，請點選「群組與模板管理」，將舊變數 {BookCount} 修改為 {BookScore} 並儲存即可。"
+        },
+        {
+            q: "Q2：為什麼學生明明有成績，卻被誤判為「未達標」？",
+            a: "常見原因有兩個：1. Excel 中的 test_score 或讀本分數欄位留白、輸入全形數字或填入文字（如「缺考」），系統會防呆視為 0 分；2. Excel 的 class 班級名稱多打空白或大小寫不符（例如 150 TH 與設定的 150TH 不符），導致系統改套用「預設小考/小說分數」進行篩選。"
+        },
+        {
+            q: "Q3：換一台電腦或改用其他瀏覽器開啟，自訂模板與歷史紀錄不見了？",
+            a: "網頁版為了免安裝與保護隱私，所有自訂模板、班級門檻與歷史紀錄皆儲存在「當前瀏覽器的本機空間（LocalStorage）」中，不會上傳至雲端。請固定使用同一台電腦與瀏覽器操作，並避免在無痕模式使用或手動清除瀏覽器網站資料。"
+        },
+        {
+            q: "Q4：上傳 Excel 時跳出「Excel 處理模組載入失敗」或縮網址功能無反應？",
+            a: "網頁版需透過網路載入 Excel 解析套件（SheetJS）與連線至縮網址服務。請確認網路連線正常，並按 Ctrl + F5（Mac 為 Cmd + Shift + R）強制重新整理網頁；若學校或公司防火牆阻擋外部 CDN，建議切換至手機熱點測試。"
+        },
+        {
+            q: "Q5：點擊「複製訊息」按鈕後，貼上時卻沒有內容？",
+            a: "部分瀏覽器安全性設定或內嵌預覽視窗會限制網頁自動寫入剪貼簿。請確認網址列左側的網站權限是否允許「剪貼簿」存取；若仍受限，可直接從右側表格預覽框手動選取文字複製。"
+        },
+        {
+            q: "Q6：擔心 Excel 欄位名稱打錯或格式不符怎麼辦？",
+            a: "直接點擊網頁頂部的「輸出Excel 範本」按鈕，系統會自動下載標準 .xlsx 範例檔（包含 studentMec、class、studentName、englishName、test_score、BookScore(月份) 等標準表頭），並同步複製格式供直接貼上。"
+        }
+    ];
+
+    const filteredFaqs = faqList.filter(
+        item =>
+            item.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.a.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
-                <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+                <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80 shrink-0">
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                        🚨 操作說明與 Q&A
+                        🚨 操作說明與常見問題 Q&A
                         <span className="text-xs font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">v2.0.0</span>
                     </h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-white"><XIcon size={24} /></button>
                 </div>
 
-                <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 text-sm text-slate-300 max-h-[65vh]">
+                <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-5 text-sm text-slate-300">
+                    {/* 老師必看 3 條核心提醒 */}
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+                        <h3 className="font-bold text-amber-400 text-sm mb-2">⚡ 老師必看：3 個最關鍵的使用提醒</h3>
+                        <ul className="text-xs text-slate-200 space-y-1.5 list-disc pl-4 leading-relaxed">
+                            <li><strong>欄位對齊：</strong>Excel 讀本欄位請命名為 <code className="text-amber-300 bg-slate-900 px-1 rounded">BookScore(月份)</code>，模板變數統一使用 <code className="text-amber-300 bg-slate-900 px-1 rounded">{"{BookScore}"}</code>（不確定可直接點「輸出Excel 範本」）。</li>
+                            <li><strong>純數字填寫：</strong>成績欄請勿留白或填「缺考」等文字，否則系統將一律防呆視為 <code className="text-amber-300 bg-slate-900 px-1 rounded">0</code> 分並列入未達標名單。</li>
+                            <li><strong>固定設備操作：</strong>自訂模板與歷史紀錄皆保存在<strong>當前瀏覽器本機</strong>，請固定使用同一台電腦與瀏覽器，切勿使用無痕模式或清除網站快取。</li>
+                        </ul>
+                    </div>
+
+                    {/* 可搜尋＋摺疊展開 Q&A */}
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <h3 className="font-bold text-slate-200 text-sm">❓ 常見問題排查（點擊展開解答）</h3>
+                            <input
+                                type="text"
+                                placeholder="🔍 搜尋問題（如：分數、換電腦、複製）..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-amber-500 w-full sm:w-60"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            {filteredFaqs.length === 0 ? (
+                                <div className="text-center text-xs text-slate-500 py-5 bg-slate-900/40 rounded-xl border border-slate-700/50">
+                                    找不到符合「{searchQuery}」的相關問題。
+                                </div>
+                            ) : (
+                                filteredFaqs.map((item, idx) => {
+                                    const isOpen = openIndex === idx;
+                                    return (
+                                        <div key={idx} className={`border rounded-xl transition-colors overflow-hidden ${isOpen ? "bg-slate-900/90 border-amber-500/50" : "bg-slate-900/40 border-slate-700 hover:border-slate-600"}`}>
+                                            <button
+                                                onClick={() => setOpenIndex(isOpen ? null : idx)}
+                                                className="w-full text-left p-3.5 flex items-center justify-between gap-3 text-xs font-bold text-slate-100"
+                                            >
+                                                <span>{item.q}</span>
+                                                <span className={`text-amber-400 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : ""}`}>▼</span>
+                                            </button>
+                                            {isOpen && (
+                                                <div className="px-3.5 pb-3.5 pt-1 text-xs text-slate-300 leading-relaxed border-t border-slate-800/80">
+                                                    {item.a}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Excel 欄位對照表 */}
                     <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-                        <h3 className="font-bold text-amber-400 mb-2">📌 Excel 欄位對應表</h3>
+                        <h3 className="font-bold text-amber-400 text-xs mb-2">📌 Excel 欄位對應表</h3>
                         <ul className="list-disc list-inside space-y-1 text-xs text-slate-300">
                             <li><code>studentMec</code>：學員編號或項次</li>
                             <li><code>class</code>：班級代碼（對應「群組與模板管理」設定之門檻）</li>
@@ -1160,8 +1236,9 @@ function HelpModal({ onClose, onStartTour }) {
                         </ul>
                     </div>
 
+                    {/* v2.0.0 更新亮點 */}
                     <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4">
-                        <h3 className="font-bold text-emerald-400 mb-2">✨ v2.0.0 版本更新亮點</h3>
+                        <h3 className="font-bold text-emerald-400 text-xs mb-2">✨ v2.0.0 版本更新亮點</h3>
                         <ul className="list-disc list-inside space-y-1 text-xs text-slate-300">
                             <li>支援聚光燈互動教學導覽，隨時可點擊右上角「聚光燈導覽」重溫操作流程。</li>
                             <li>整合「縮網址 URL 小工具」，縮短後自動複製並可一鍵插入通知模板。</li>
@@ -1171,7 +1248,7 @@ function HelpModal({ onClose, onStartTour }) {
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-slate-700 bg-slate-900 flex justify-between items-center">
+                <div className="p-4 border-t border-slate-700 bg-slate-900 flex justify-between items-center shrink-0">
                     <button
                         onClick={onStartTour}
                         className="px-4 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-xs font-bold transition-colors"
