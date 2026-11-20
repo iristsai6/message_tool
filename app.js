@@ -857,62 +857,170 @@ function App() {
                 <SpotlightTourModal onClose={handleCloseTour} />
             )}
 
-            {/* 🚨 說明與常見問題 Q&A Modal */}
+            {/* 🚨 操作說明 & 常見問題 Q&A Modal */}
             {showHelpModal && (
-                <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden shadow-2xl">
-                        <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
-                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                🚨 操作說明與常見問題除錯
-                                <span className="text-xs font-mono bg-amber-500 text-slate-900 px-2 py-0.5 rounded-full font-bold">{APP_VERSION}</span>
-                            </h2>
-                            <button onClick={() => setShowHelpModal(false)} className="text-slate-400 hover:text-white"><XIcon size={24} /></button>
+                <HelpModal onClose={() => setShowHelpModal(false)} />
+            )}
+        </div>
+    );
+}
+
+// --- 操作說明 & 常見問題 Q&A 彈窗元件 ---
+function HelpModal({ onClose }) {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [openIndex, setOpenIndex] = useState(0); // 預設展開第 1 題
+
+    const faqList = [
+        {
+            q: "Q1：為什麼切換「對應讀本月份」或重新載入後，小說分數顯示為 0 或空白？",
+            a: "請確認 Excel 標題列包含 BookScore(月份)（例如 BookScore(11)），且訊息模板內使用 {BookScore} 變數。若瀏覽器曾儲存過舊版模板，請點選「群組與模板管理」，將舊變數 {BookCount} 修改為 {BookScore} 並儲存即可。"
+        },
+        {
+            q: "Q2：為什麼學生明明有成績，卻被誤判為「未達標」？",
+            a: "常見原因有兩個：1. Excel 中的 test_score 或讀本分數欄位留白、輸入全形數字或填入文字（如「缺考」），系統會防呆視為 0 分；2. Excel 的 class 班級名稱多打空白或大小寫不符（例如 150 TH 與設定的 150TH 不符），導致系統改套用「預設小考/小說分數」進行篩選。"
+        },
+        {
+            q: "Q3：換一台電腦或改用其他瀏覽器開啟，自訂模板與歷史紀錄不見了？",
+            a: "網頁版為了免安裝與保護隱私，所有自訂模板、班級門檻與歷史紀錄皆儲存在「當前瀏覽器的本機空間（LocalStorage）」中，不會上傳至雲端。請固定使用同一台電腦與瀏覽器操作，並避免在無痕模式使用或手動清除瀏覽器網站資料。"
+        },
+        {
+            q: "Q4：上傳 Excel 時跳出「Excel 處理模組載入失敗」或縮網址功能無反應？",
+            a: "網頁版需透過網路載入 Excel 解析套件（SheetJS）與連線至縮網址服務。請確認網路連線正常，並按 Ctrl + F5（Mac 為 Cmd + Shift + R）強制重新整理網頁；若學校或公司防火牆阻擋外部 CDN，建議切換至手機熱點測試。"
+        },
+        {
+            q: "Q5：點擊「複製訊息」按鈕後，貼上時卻沒有內容？",
+            a: "部分瀏覽器安全性設定或內嵌預覽視窗會限制網頁自動寫入剪貼簿。請確認網址列左側的網站權限是否允許「剪貼簿」存取；若仍受限，可直接從右側表格預覽框手動選取文字複製。"
+        },
+        {
+            q: "Q6：擔心 Excel 欄位名稱打錯或格式不符怎麼辦？",
+            a: "直接點擊網頁中的「輸出Excel 範本」按鈕，系統會自動下載標準 .xlsx 範例檔（包含 studentMec、class、studentName、englishName、test_score、BookScore(月份) 等標準表頭），並同步複製格式供直接貼上。"
+        }
+    ];
+
+    // 依關鍵字即時過濾 Q&A
+    const filteredFaqs = faqList.filter(
+        item =>
+            item.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.a.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const toggleAccordion = (idx) => {
+        setOpenIndex(openIndex === idx ? null : idx);
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+                
+                {/* 標題列 (含版本號標示) */}
+                <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/90 shrink-0">
+                    <div className="flex items-center gap-2.5">
+                        <span className="text-xl">🚨</span>
+                        <h2 className="text-lg font-bold text-white">操作說明與常見問題 Q&A</h2>
+                        <span className="text-xs font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded-full">
+                            {APP_VERSION}
+                        </span>
+                    </div>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+                        <XIcon size={24} />
+                    </button>
+                </div>
+
+                {/* 捲動內容區 */}
+                <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-5">
+                    
+                    {/* 區塊一：新手 3 條核心懶人包 */}
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+                        <h3 className="font-bold text-amber-400 text-sm mb-2 flex items-center gap-1.5">
+                            ⚡ 老師必看：3 個最關鍵的使用提醒
+                        </h3>
+                        <ul className="text-xs text-slate-200 space-y-1.5 list-disc pl-4 leading-relaxed">
+                            <li>
+                                <strong>欄位對齊：</strong>Excel 讀本欄位請命名為 <code className="text-amber-300 bg-slate-900 px-1 rounded">BookScore(月份)</code>，模板變數請統一使用 <code className="text-amber-300 bg-slate-900 px-1 rounded">{"{BookScore}"}</code>（不確定可直接點「輸出Excel 範本」）。
+                            </li>
+                            <li>
+                                <strong>純數字填寫：</strong>成績欄請勿留白或填「缺考」等文字，否則系統將一律防呆視為 <code className="text-amber-300 bg-slate-900 px-1 rounded">0</code> 分並列入未達標名單。
+                            </li>
+                            <li>
+                                <strong>固定設備操作：</strong>自訂模板與歷史紀錄皆保存在<strong>當前瀏覽器本機</strong>，請固定使用同一台電腦與瀏覽器，切勿使用無痕模式或清除網站快取。
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* 區塊二：可搜尋＋摺疊展開 (Accordion) 常見問題 */}
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <h3 className="font-bold text-slate-200 text-sm">❓ 常見問題排查（點擊展開解答）</h3>
+                            <input
+                                type="text"
+                                placeholder="🔍 輸入關鍵字搜尋問題（如：分數、換電腦、複製）..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-amber-500 w-full sm:w-64"
+                            />
                         </div>
-                        
-                        <div className="p-6 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 max-h-[60vh] text-sm text-slate-300">
-                            <div className="bg-slate-900/70 border border-slate-700 rounded-xl p-3.5 flex flex-col gap-1">
-                                <div className="font-bold text-amber-400 flex items-center justify-between">
-                                    <span>📌 目前版本：{APP_VERSION}</span>
-                                    <span className="text-xs text-slate-400 font-normal">Web Multi-File Edition</span>
+
+                        <div className="space-y-2">
+                            {filteredFaqs.length === 0 ? (
+                                <div className="text-center text-xs text-slate-500 py-6 bg-slate-900/40 rounded-xl border border-slate-700/50">
+                                    找不到符合「{searchQuery}」的相關問題，請嘗試其他關鍵字。
                                 </div>
-                                <p className="text-xs text-slate-400">
-                                    v2.0.0 更新重點：新增「聚光燈新手導覽」、「班級群組管理與頁籤區分」、「縮網址 URL 小工具」、簡化條件為「按鈕切換形式」、支援一鍵「輸出/複製 Excel 範本」。
-                                </p>
-                            </div>
-
-                            <h3 className="font-bold text-amber-400">🏫 1. 班級群組管理與區分</h3>
-                            <p>• <b>新增班級群組</b>：點擊左側「群組與模板管理」，即可自由新增不同班級群組（例如 <code>150TH</code>、<code>200TH</code>、<code>300TU</code>）並個別設定小考與小說達標標準。</p>
-                            <p>• <b>名單分群檢視</b>：右側名單上方提供「班級群組區分」頁籤，可單獨檢視特定班級並一鍵複製該班級的所有通知訊息。</p>
-
-                            <hr className="border-slate-700 my-1"/>
-
-                            <h3 className="font-bold text-amber-400">📊 2. Excel 欄位對照說明</h3>
-                            <p>• <b>學號/項次</b>：請命名為 <code>studentMec</code></p>
-                            <p>• <b>姓名欄位</b>：請命名為 <code>studentName</code>（英文名可選填 <code>englishName</code>）</p>
-                            <p>• <b>班級欄位</b>：請命名為 <code>class</code>（需與設定的班級群組名稱一致）</p>
-                            <p>• <b>小考成績</b>：請命名為 <code>test_score</code></p>
-                            <p>• <b>讀本分數</b>：請命名為對應月份格式，例如 <code>BookScore(11)</code>（模板內請寫 <code>{`{BookScore}`}</code>）</p>
-
-                            <hr className="border-slate-700 my-1"/>
-
-                            <h3 className="font-bold text-amber-400">🔗 3. 縮網址與篩選按鈕操作</h3>
-                            <p>• <b>縮網址小工具</b>：貼上長網址後點擊「縮短」，系統會自動產生短網址並寫入剪貼簿，也可點擊「插入模板」直接加進訊息中。</p>
-                            <p>• <b>條件篩選按鈕</b>：點擊「群發模式」、「小考未達標」或「小說未達標」按鈕即可即時切換過濾條件。</p>
-
-                            <hr className="border-slate-700 my-1"/>
-
-                            <h3 className="font-bold text-rose-400">❓ 4. 常見問題 Q&A 與除錯</h3>
-                            <p><b>Q: 名字顯示「學員 1」？</b><br/>A: 代表 Excel 找不到對應的 <code>studentName</code> 欄位，請檢查第一列標題是否正確。</p>
-                            <p><b>Q: 為什麼找不到未達標學生？</b><br/>A: 可能是學生分數皆已達標，若需檢視全部名單請點亮左側「群發模式」按鈕。</p>
-                        </div>
-
-                        <div className="p-4 border-t border-slate-700 flex justify-between items-center bg-slate-900">
-                            <span className="text-xs font-mono text-slate-500">批次模板生成小工具 {APP_VERSION}</span>
-                            <button onClick={() => setShowHelpModal(false)} className="px-6 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold transition-colors">關閉</button>
+                            ) : (
+                                filteredFaqs.map((item, idx) => {
+                                    const isOpen = openIndex === idx;
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className={`border rounded-xl transition-colors overflow-hidden ${
+                                                isOpen
+                                                    ? "bg-slate-900/90 border-amber-500/50"
+                                                    : "bg-slate-900/40 border-slate-700 hover:border-slate-600"
+                                            }`}
+                                        >
+                                            <button
+                                                onClick={() => toggleAccordion(idx)}
+                                                className="w-full text-left p-3.5 flex items-center justify-between gap-3 text-xs font-bold text-slate-100"
+                                            >
+                                                <span>{item.q}</span>
+                                                <span className={`text-amber-400 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : ""}`}>
+                                                    ▼
+                                                </span>
+                                            </button>
+                                            {isOpen && (
+                                                <div className="px-3.5 pb-3.5 pt-1 text-xs text-slate-300 leading-relaxed border-t border-slate-800/80">
+                                                    {item.a}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
+
+                    {/* 區塊三：Excel 欄位對照表與版本亮點 */}
+                    <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 flex flex-col gap-2 text-xs text-slate-300">
+                        <h3 className="font-bold text-amber-400 text-sm">📊 Excel 欄位對照與功能說明</h3>
+                        <p>• <b>學號/項次</b>：請命名為 <code className="text-amber-300">studentMec</code></p>
+                        <p>• <b>姓名欄位</b>：請命名為 <code className="text-amber-300">studentName</code>（英文名可選填 <code className="text-amber-300">englishName</code>）</p>
+                        <p>• <b>班級欄位</b>：請命名為 <code className="text-amber-300">class</code>（需與「群組與模板管理」設定的班級群組名稱一致）</p>
+                        <p>• <b>小考成績</b>：請命名為 <code className="text-amber-300">test_score</code>（模板變數 <code className="text-amber-300">{"{test_score}"}</code>）</p>
+                        <p>• <b>讀本分數</b>：請命名為對應月份格式，例如 <code className="text-amber-300">BookScore(11)</code>（模板內請寫 <code className="text-amber-300">{"{BookScore}"}</code>）</p>
+                    </div>
+
                 </div>
-            )}
+
+                {/* 底部關閉按鈕 */}
+                <div className="p-4 border-t border-slate-700 bg-slate-900 flex justify-between items-center shrink-0">
+                    <span className="text-xs text-slate-500">智慧批次模板生成小工具 • Web Edition {APP_VERSION}</span>
+                    <button
+                        onClick={onClose}
+                        className="px-6 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 text-sm font-bold transition-colors"
+                    >
+                        我瞭解了
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
