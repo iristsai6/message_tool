@@ -27,11 +27,15 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # 👇 請務必確認這一段存在、縮排為 6 個空格，且使用 @v3
+      - name: Package site
+        run: tar -cvf artifact.tar --exclude='.git' --exclude='.github' .
+
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          path: '.'
+          name: github-pages
+          path: artifact.tar
+          retention-days: 1
 
       - name: Deploy to GitHub Pages
         id: deployment
