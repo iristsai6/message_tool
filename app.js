@@ -613,11 +613,11 @@ function App() {
                     >
                         <HelpCircleIcon size={15} /> 聚光燈導覽
                     </button>
-                    <button
-                        onClick={() => setShowHelp(true)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 text-xs font-semibold transition-colors"
-                    >
-                        <BookOpenIcon size={15} /> 操作說明 & Q&A
+                    <button 
+                            onClick={() => setShowHelp(true)}
+                            className="ml-auto flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/50 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                            
+                            <HelpModal onClose={15} /> 操作說明 & Q&A
                     </button>
                 </div>
             </header>
