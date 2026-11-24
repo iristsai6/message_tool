@@ -310,7 +310,7 @@ function App() {
         alert(`已將「${groupLabel}」共 ${displayedResults.length} 筆生成內容複製到剪貼簿！`);
     };
 
-// --- 縮網址功能 (純前端原生跨域請求，不依賴第三方代理伺服器) ---
+// --- 縮網址功能 (純前端 JSONP 繞過 CORS 限制 + 獨立容錯備援) ---
         const handleShortenUrl = async () => {
             const rawUrl = longUrl.trim();
             if (!rawUrl) {
@@ -319,62 +319,69 @@ function App() {
             }
             const formattedUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
 
+            // 共用 JSONP 請求工具（不受瀏覽器 CORS 政策阻擋）
+            const fetchJsonp = (apiUrl) => new Promise((resolve, reject) => {
+                const callbackName = `jsonp_cb_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+                const script = document.createElement("script");
+                const timeout = setTimeout(() => {
+                    cleanup();
+                    reject(new Error("Request timeout"));
+                }, 7000);
+
+                const cleanup = () => {
+                    clearTimeout(timeout);
+                    delete window[callbackName];
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                };
+
+                window[callbackName] = (data) => {
+                    cleanup();
+                    if (data && data.shorturl) {
+                        resolve(data.shorturl);
+                    } else {
+                        reject(new Error(data?.errormessage || "API error"));
+                    }
+                };
+
+                script.src = `${apiUrl}&callback=${callbackName}`;
+                script.onerror = () => {
+                    cleanup();
+                    reject(new Error("Script load error"));
+                };
+                document.body.appendChild(script);
+            });
+
             setIsShortening(true);
             setShortUrl("");
             try {
-                // 通道 1：ulvis.net 官方原生支援 CORS 介面（直接 301 轉址，無廣告與確認頁）
-                const ulvisRes = await fetch(`https://ulvis.net/API/write/get?url=${encodeURIComponent(formattedUrl)}&type=json`);
-                if (ulvisRes.ok) {
-                    const ulvisData = await ulvisRes.json();
-                    if (ulvisData && ulvisData.success && ulvisData.data && ulvisData.data.url) {
-                        setShortUrl(ulvisData.data.url);
-                        await executeCopy(ulvisData.data.url);
+                // 通道 1：使用 v.gd JSONP（預設直接 301 跳轉，不會強制跳出安全確認頁）
+                try {
+                    const vgdUrl = await fetchJsonp(`https://v.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}`);
+                    if (vgdUrl) {
+                        setShortUrl(vgdUrl);
+                        await executeCopy(vgdUrl);
                         return;
                     }
+                } catch (e1) {
+                    console.warn("通道 1 (v.gd) 失敗，切換至備援通道:", e1);
                 }
 
-                // 通道 2：v.gd 官方 JSONP 介面（繞過 CORS 限制，且預設直接跳轉不顯示預覽頁）
-                const vgdUrl = await new Promise((resolve, reject) => {
-                    const callbackName = `vgd_cb_${Date.now()}`;
-                    const script = document.createElement("script");
-                    const timeout = setTimeout(() => {
-                        cleanup();
-                        reject(new Error("v.gd timeout"));
-                    }, 8000);
-
-                    const cleanup = () => {
-                        clearTimeout(timeout);
-                        delete window[callbackName];
-                        if (script.parentNode) script.parentNode.removeChild(script);
-                    };
-
-                    window[callbackName] = (data) => {
-                        cleanup();
-                        if (data && data.shorturl) {
-                            resolve(data.shorturl);
-                        } else {
-                            reject(new Error(data?.errormessage || "v.gd error"));
-                        }
-                    };
-
-                    script.src = `https://v.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}&callback=${callbackName}`;
-                    script.onerror = () => {
-                        cleanup();
-                        reject(new Error("v.gd script error"));
-                    };
-                    document.body.appendChild(script);
-                });
-
-                if (vgdUrl) {
-                    setShortUrl(vgdUrl);
-                    await executeCopy(vgdUrl);
-                    return;
+                // 通道 2：使用 is.gd JSONP 作為備援
+                try {
+                    const isgdUrl = await fetchJsonp(`https://is.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}`);
+                    if (isgdUrl) {
+                        setShortUrl(isgdUrl);
+                        await executeCopy(isgdUrl);
+                        return;
+                    }
+                } catch (e2) {
+                    console.warn("通道 2 (is.gd) 失敗:", e2);
                 }
 
-                throw new Error("縮網址服務暫時無回應");
+                throw new Error("所有縮網址通道皆無法連線");
             } catch (err) {
                 console.error("Shorten URL error:", err);
-                alert("縮網址失敗，請確認網址格式是否正確，或稍後再試！");
+                alert("縮網址服務暫時無法連線，請確認網址格式是否正確，或稍後再試！");
             } finally {
                 setIsShortening(false);
             }
