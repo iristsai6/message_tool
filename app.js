@@ -310,7 +310,7 @@ function App() {
         alert(`已將「${groupLabel}」共 ${displayedResults.length} 筆生成內容複製到剪貼簿！`);
     };
 
-// --- 縮網址功能 (純前端 JSONP 繞過 CORS 限制 + 獨立容錯備援) ---
+// --- 縮網址功能 (Dropbox 專屬無警告頁直連 + 一般網址縮短) ---
         const handleShortenUrl = async () => {
             const rawUrl = longUrl.trim();
             if (!rawUrl) {
@@ -319,69 +319,64 @@ function App() {
             }
             const formattedUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
 
-            // 共用 JSONP 請求工具（不受瀏覽器 CORS 政策阻擋）
-            const fetchJsonp = (apiUrl) => new Promise((resolve, reject) => {
-                const callbackName = `jsonp_cb_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-                const script = document.createElement("script");
-                const timeout = setTimeout(() => {
-                    cleanup();
-                    reject(new Error("Request timeout"));
-                }, 7000);
-
-                const cleanup = () => {
-                    clearTimeout(timeout);
-                    delete window[callbackName];
-                    if (script.parentNode) script.parentNode.removeChild(script);
-                };
-
-                window[callbackName] = (data) => {
-                    cleanup();
-                    if (data && data.shorturl) {
-                        resolve(data.shorturl);
-                    } else {
-                        reject(new Error(data?.errormessage || "API error"));
-                    }
-                };
-
-                script.src = `${apiUrl}&callback=${callbackName}`;
-                script.onerror = () => {
-                    cleanup();
-                    reject(new Error("Script load error"));
-                };
-                document.body.appendChild(script);
-            });
-
             setIsShortening(true);
             setShortUrl("");
             try {
-                // 通道 1：使用 v.gd JSONP（預設直接 301 跳轉，不會強制跳出安全確認頁）
-                try {
-                    const vgdUrl = await fetchJsonp(`https://v.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}`);
-                    if (vgdUrl) {
-                        setShortUrl(vgdUrl);
-                        await executeCopy(vgdUrl);
-                        return;
-                    }
-                } catch (e1) {
-                    console.warn("通道 1 (v.gd) 失敗，切換至備援通道:", e1);
+                // 1. 針對 Dropbox 分享連結（如 dropbox.com/scl/fi/...）：直接壓縮為本站專屬直連短網址，100% 繞過 v.gd/is.gd 強制英文警告頁
+                const urlObj = new URL(formattedUrl);
+                if (urlObj.hostname.includes("dropbox.com") && urlObj.pathname.includes("/scl/fi/")) {
+                    const parts = urlObj.pathname.split("/scl/fi/")[1].split("/");
+                    const docId = parts[0];
+                    const fileName = parts[1] || "";
+                    const rlkey = urlObj.searchParams.get("rlkey") || "";
+                    const dl = urlObj.searchParams.get("dl") || "0";
+
+                    const baseUrl = window.location.origin + window.location.pathname;
+                    const shortParams = new URLSearchParams();
+                    shortParams.set("d", docId);
+                    if (fileName) shortParams.set("f", fileName);
+                    if (rlkey) shortParams.set("r", rlkey);
+                    if (dl !== "0") shortParams.set("dl", dl);
+
+                    const directShortUrl = `${baseUrl}?${shortParams.toString()}`;
+                    setShortUrl(directShortUrl);
+                    await executeCopy(directShortUrl);
+                    return;
                 }
 
-                // 通道 2：使用 is.gd JSONP 作為備援
-                try {
-                    const isgdUrl = await fetchJsonp(`https://is.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}`);
-                    if (isgdUrl) {
-                        setShortUrl(isgdUrl);
-                        await executeCopy(isgdUrl);
-                        return;
-                    }
-                } catch (e2) {
-                    console.warn("通道 2 (is.gd) 失敗:", e2);
-                }
+                // 2. 其他一般網址：透過 v.gd JSONP 縮短
+                const vgdUrl = await new Promise((resolve, reject) => {
+                    const callbackName = `jsonp_cb_${Date.now()}`;
+                    const script = document.createElement("script");
+                    const timeout = setTimeout(() => {
+                        cleanup();
+                        reject(new Error("Request timeout"));
+                    }, 7000);
 
-                throw new Error("所有縮網址通道皆無法連線");
+                    const cleanup = () => {
+                        clearTimeout(timeout);
+                        delete window[callbackName];
+                        if (script.parentNode) script.parentNode.removeChild(script);
+                    };
+
+                    window[callbackName] = (data) => {
+                        cleanup();
+                        if (data && data.shorturl) resolve(data.shorturl);
+                        else reject(new Error(data?.errormessage || "API error"));
+                    };
+
+                    script.src = `https://v.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}&callback=${callbackName}`;
+                    script.onerror = () => { cleanup(); reject(new Error("Script load error")); };
+                    document.body.appendChild(script);
+                });
+
+                if (vgdUrl) {
+                    setShortUrl(vgdUrl);
+                    await executeCopy(vgdUrl);
+                }
             } catch (err) {
                 console.error("Shorten URL error:", err);
-                alert("縮網址服務暫時無法連線，請確認網址格式是否正確，或稍後再試！");
+                alert("縮網址失敗，請確認網址格式是否正確！");
             } finally {
                 setIsShortening(false);
             }
