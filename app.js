@@ -310,7 +310,7 @@ function App() {
         alert(`已將「${groupLabel}」共 ${displayedResults.length} 筆生成內容複製到剪貼簿！`);
     };
 
-    // --- v2.0.0 新增：縮網址功能 ---
+    // --- v2.0.0 調整：優先使用 TinyURL（避免 is.gd 出現英文安全預覽頁），並保留 is.gd 備援 ---
     const handleShortenUrl = async () => {
         const target = longUrl.trim();
         if (!target) {
@@ -321,20 +321,23 @@ function App() {
         setIsShortening(true);
         setShortUrl("");
         try {
-            const response = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}`);
-            const data = await response.json();
+            const tinyRes = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(formattedUrl)}`);
+            if (tinyRes.ok) {
+                const tinyText = await tinyRes.text();
+                if (tinyText && tinyText.startsWith("http")) {
+                    setShortUrl(tinyText.trim());
+                    await executeCopy(tinyText.trim());
+                    return;
+                }
+            }
+
+            const fallbackRes = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}`);
+            const data = await fallbackRes.json();
             if (data.shorturl) {
                 setShortUrl(data.shorturl);
                 await executeCopy(data.shorturl);
             } else {
-                const fallbackRes = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(formattedUrl)}`);
-                if (fallbackRes.ok) {
-                    const tinyText = await fallbackRes.text();
-                    setShortUrl(tinyText);
-                    await executeCopy(tinyText);
-                } else {
-                    alert(`縮網址失敗：${data.errormessage || "請確認網址格式是否正確"}`);
-                }
+                alert(`縮網址失敗：${data.errormessage || "請確認網址格式是否正確"}`);
             }
         } catch (err) {
             console.error("Shorten URL Error:", err);
