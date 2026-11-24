@@ -310,7 +310,7 @@ function App() {
         alert(`已將「${groupLabel}」共 ${displayedResults.length} 筆生成內容複製到剪貼簿！`);
     };
 
-    // --- v2.0.0 調整：優先使用 TinyURL（避免 is.gd 出現英文安全預覽頁），並保留 is.gd 備援 ---
+// --- v2.0.0 修正：透過 CORS 通道取得正統 TinyURL（直接 301 轉址，無安全警告頁） ---
     const handleShortenUrl = async () => {
         const target = longUrl.trim();
         if (!target) {
@@ -321,16 +321,20 @@ function App() {
         setIsShortening(true);
         setShortUrl("");
         try {
-            const tinyRes = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(formattedUrl)}`);
-            if (tinyRes.ok) {
-                const tinyText = await tinyRes.text();
-                if (tinyText && tinyText.startsWith("http")) {
-                    setShortUrl(tinyText.trim());
-                    await executeCopy(tinyText.trim());
+            // 1. 優先透過 CORS 通道呼叫 TinyURL API（回傳純文字 https://tinyurl.com/xxxx，點擊直接跳轉）
+            const tinyApi = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(formattedUrl)}`;
+            const proxyRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(tinyApi)}`);
+            if (proxyRes.ok) {
+                const proxyData = await proxyRes.json();
+                const tinyText = (proxyData.contents || "").trim();
+                if (tinyText && tinyText.startsWith("https://tinyurl.com/")) {
+                    setShortUrl(tinyText);
+                    await executeCopy(tinyText);
                     return;
                 }
             }
 
+            // 2. 若 TinyURL 通道暫時忙碌，才切換至 is.gd 備援
             const fallbackRes = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}`);
             const data = await fallbackRes.json();
             if (data.shorturl) {
