@@ -310,7 +310,7 @@ function App() {
         alert(`已將「${groupLabel}」共 ${displayedResults.length} 筆生成內容複製到剪貼簿！`);
     };
 
-// --- 縮網址功能 (Dropbox 專屬無警告頁直連 + 一般網址縮短) ---
+// --- 縮網址功能 (使用 clck.ru 官方短網址，網域簡短無個人資訊且直接跳轉無確認頁) ---
         const handleShortenUrl = async () => {
             const rawUrl = longUrl.trim();
             if (!rawUrl) {
@@ -322,30 +322,19 @@ function App() {
             setIsShortening(true);
             setShortUrl("");
             try {
-                // 1. 針對 Dropbox 分享連結（如 dropbox.com/scl/fi/...）：直接壓縮為本站專屬直連短網址，100% 繞過 v.gd/is.gd 強制英文警告頁
-                const urlObj = new URL(formattedUrl);
-                if (urlObj.hostname.includes("dropbox.com") && urlObj.pathname.includes("/scl/fi/")) {
-                    const parts = urlObj.pathname.split("/scl/fi/")[1].split("/");
-                    const docId = parts[0];
-                    const fileName = parts[1] || "";
-                    const rlkey = urlObj.searchParams.get("rlkey") || "";
-                    const dl = urlObj.searchParams.get("dl") || "0";
-
-                    const baseUrl = window.location.origin + window.location.pathname;
-                    const shortParams = new URLSearchParams();
-                    shortParams.set("d", docId);
-                    if (fileName) shortParams.set("f", fileName);
-                    if (rlkey) shortParams.set("r", rlkey);
-                    if (dl !== "0") shortParams.set("dl", dl);
-
-                    const directShortUrl = `${baseUrl}?${shortParams.toString()}`;
-                    setShortUrl(directShortUrl);
-                    await executeCopy(directShortUrl);
-                    return;
+                // 通道 1：clck.ru 官方原生支援 CORS 介面（極短網域、直接 301 跳轉 Dropbox 無確認頁）
+                const clckRes = await fetch(`https://clck.ru/--?url=${encodeURIComponent(formattedUrl)}`);
+                if (clckRes.ok) {
+                    const clckText = (await clckRes.text()).trim();
+                    if (clckText.startsWith("http")) {
+                        setShortUrl(clckText);
+                        await executeCopy(clckText);
+                        return;
+                    }
                 }
 
-                // 2. 其他一般網址：透過 v.gd JSONP 縮短
-                const vgdUrl = await new Promise((resolve, reject) => {
+                // 通道 2：備援通道（若遇網路限制時啟用）
+                const fallbackUrl = await new Promise((resolve, reject) => {
                     const callbackName = `jsonp_cb_${Date.now()}`;
                     const script = document.createElement("script");
                     const timeout = setTimeout(() => {
@@ -370,13 +359,13 @@ function App() {
                     document.body.appendChild(script);
                 });
 
-                if (vgdUrl) {
-                    setShortUrl(vgdUrl);
-                    await executeCopy(vgdUrl);
+                if (fallbackUrl) {
+                    setShortUrl(fallbackUrl);
+                    await executeCopy(fallbackUrl);
                 }
             } catch (err) {
                 console.error("Shorten URL error:", err);
-                alert("縮網址失敗，請確認網址格式是否正確！");
+                alert("縮網址服務暫時無法連線，請確認網址格式是否正確，或稍後再試！");
             } finally {
                 setIsShortening(false);
             }
