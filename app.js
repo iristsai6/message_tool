@@ -310,46 +310,62 @@ function App() {
         alert(`已將「${groupLabel}」共 ${displayedResults.length} 筆生成內容複製到剪貼簿！`);
     };
 
-// --- v2.0.0 修正：透過 CORS 通道取得正統 TinyURL（直接 301 轉址，無安全警告頁） ---
-    const handleShortenUrl = async () => {
-        const target = longUrl.trim();
-        if (!target) {
-            alert("請先輸入需要縮短的網址！");
-            return;
-        }
-        const formattedUrl = /^https?:\/\//i.test(target) ? target : `https://${target}`;
-        setIsShortening(true);
-        setShortUrl("");
-        try {
-            // 1. 優先透過 CORS 通道呼叫 TinyURL API（回傳純文字 https://tinyurl.com/xxxx，點擊直接跳轉）
-            const tinyApi = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(formattedUrl)}`;
-            const proxyRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(tinyApi)}`);
-            if (proxyRes.ok) {
-                const proxyData = await proxyRes.json();
-                const tinyText = (proxyData.contents || "").trim();
-                if (tinyText && tinyText.startsWith("https://tinyurl.com/")) {
-                    setShortUrl(tinyText);
-                    await executeCopy(tinyText);
-                    return;
-                }
+// --- 縮網址功能 (原生 CORS 直連 + 多通道自動備援，免確認頁直接跳轉) ---
+        const handleShortenUrl = async () => {
+            const rawUrl = longUrl.trim();
+            if (!rawUrl) {
+                alert("請先貼上要縮短的長網址！");
+                return;
+            }
+            if (!/^https?:\/\//i.test(rawUrl)) {
+                alert("請輸入完整的網址（需包含 http:// 或 https://）");
+                return;
             }
 
-            // 2. 若 TinyURL 通道暫時忙碌，才切換至 is.gd 備援
-            const fallbackRes = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}`);
-            const data = await fallbackRes.json();
-            if (data.shorturl) {
-                setShortUrl(data.shorturl);
-                await executeCopy(data.shorturl);
-            } else {
-                alert(`縮網址失敗：${data.errormessage || "請確認網址格式是否正確"}`);
+            setIsShortening(true);
+            setShortUrl("");
+            try {
+                // 通道 1：使用 corsproxy.io 呼叫 TinyURL（比 allorigins 更穩定且直接回傳純文字短網址）
+                const tinyTarget = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(rawUrl)}`;
+                const proxy1 = `https://corsproxy.io/?url=${encodeURIComponent(tinyTarget)}`;
+                const res1 = await fetch(proxy1);
+                if (res1.ok) {
+                    const text1 = (await res1.text()).trim();
+                    if (text1.startsWith("http")) {
+                        setShortUrl(text1);
+                        return;
+                    }
+                }
+
+                // 通道 2：使用 codetabs 代理呼叫 TinyURL
+                const proxy2 = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(tinyTarget)}`;
+                const res2 = await fetch(proxy2);
+                if (res2.ok) {
+                    const text2 = (await res2.text()).trim();
+                    if (text2.startsWith("http")) {
+                        setShortUrl(text2);
+                        return;
+                    }
+                }
+
+                // 通道 3：原生支援 CORS 的 da.gd 短網址服務（直接 301 跳轉、無預覽確認頁）
+                const dagdRes = await fetch(`https://da.gd/s?url=${encodeURIComponent(rawUrl)}`);
+                if (dagdRes.ok) {
+                    const text3 = (await dagdRes.text()).trim();
+                    if (text3.startsWith("http")) {
+                        setShortUrl(text3);
+                        return;
+                    }
+                }
+
+                throw new Error("所有縮網址通道暫時無回應");
+            } catch (err) {
+                console.error("Shorten URL error:", err);
+                alert("縮網址服務暫時忙碌中，請稍後再試！");
+            } finally {
+                setIsShortening(false);
             }
-        } catch (err) {
-            console.error("Shorten URL Error:", err);
-            alert("縮網址服務連線失敗，請檢查網路狀態或稍後再試。");
-        } finally {
-            setIsShortening(false);
-        }
-    };
+        };
 
     // --- v2.0.0 新增：輸出/複製 Excel 範本 ---
     const handleExportTemplateExcel = () => {
