@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>批次模板生成小工具 v2.0.0</title>
     <link rel="icon" type="image/png" href="icon.png" />
+
+    <script>
+        // 若網址帶有 Dropbox 專屬縮碼參數 (?d=...&r=...)，直接秒速跳轉至原始 Dropbox 連結（無確認頁）
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const d = params.get('d');
+            const r = params.get('r');
+            if (d) {
+                const file = params.get('f') || '';
+                const dl = params.get('dl') || '0';
+                const target = `https://www.dropbox.com/scl/fi/${d}/${encodeURIComponent(file)}?rlkey=${r || ''}&dl=${dl}`;
+                window.location.replace(target);
+            }
+        })();
+    </script>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
