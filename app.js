@@ -310,63 +310,76 @@ function App() {
         alert(`已將「${groupLabel}」共 ${displayedResults.length} 筆生成內容複製到剪貼簿！`);
     };
 
-// --- 縮網址功能 (原生 CORS 直連 + 多通道自動備援，免確認頁直接跳轉) ---
+// --- 縮網址功能 (純前端原生跨域請求，不依賴第三方代理伺服器) ---
         const handleShortenUrl = async () => {
             const rawUrl = longUrl.trim();
             if (!rawUrl) {
                 alert("請先貼上要縮短的長網址！");
                 return;
             }
-            if (!/^https?:\/\//i.test(rawUrl)) {
-                alert("請輸入完整的網址（需包含 http:// 或 https://）");
-                return;
-            }
+            const formattedUrl = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
 
             setIsShortening(true);
             setShortUrl("");
             try {
-                // 通道 1：使用 corsproxy.io 呼叫 TinyURL（比 allorigins 更穩定且直接回傳純文字短網址）
-                const tinyTarget = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(rawUrl)}`;
-                const proxy1 = `https://corsproxy.io/?url=${encodeURIComponent(tinyTarget)}`;
-                const res1 = await fetch(proxy1);
-                if (res1.ok) {
-                    const text1 = (await res1.text()).trim();
-                    if (text1.startsWith("http")) {
-                        setShortUrl(text1);
+                // 通道 1：ulvis.net 官方原生支援 CORS 介面（直接 301 轉址，無廣告與確認頁）
+                const ulvisRes = await fetch(`https://ulvis.net/API/write/get?url=${encodeURIComponent(formattedUrl)}&type=json`);
+                if (ulvisRes.ok) {
+                    const ulvisData = await ulvisRes.json();
+                    if (ulvisData && ulvisData.success && ulvisData.data && ulvisData.data.url) {
+                        setShortUrl(ulvisData.data.url);
+                        await executeCopy(ulvisData.data.url);
                         return;
                     }
                 }
 
-                // 通道 2：使用 codetabs 代理呼叫 TinyURL
-                const proxy2 = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(tinyTarget)}`;
-                const res2 = await fetch(proxy2);
-                if (res2.ok) {
-                    const text2 = (await res2.text()).trim();
-                    if (text2.startsWith("http")) {
-                        setShortUrl(text2);
-                        return;
-                    }
+                // 通道 2：v.gd 官方 JSONP 介面（繞過 CORS 限制，且預設直接跳轉不顯示預覽頁）
+                const vgdUrl = await new Promise((resolve, reject) => {
+                    const callbackName = `vgd_cb_${Date.now()}`;
+                    const script = document.createElement("script");
+                    const timeout = setTimeout(() => {
+                        cleanup();
+                        reject(new Error("v.gd timeout"));
+                    }, 8000);
+
+                    const cleanup = () => {
+                        clearTimeout(timeout);
+                        delete window[callbackName];
+                        if (script.parentNode) script.parentNode.removeChild(script);
+                    };
+
+                    window[callbackName] = (data) => {
+                        cleanup();
+                        if (data && data.shorturl) {
+                            resolve(data.shorturl);
+                        } else {
+                            reject(new Error(data?.errormessage || "v.gd error"));
+                        }
+                    };
+
+                    script.src = `https://v.gd/create.php?format=json&url=${encodeURIComponent(formattedUrl)}&callback=${callbackName}`;
+                    script.onerror = () => {
+                        cleanup();
+                        reject(new Error("v.gd script error"));
+                    };
+                    document.body.appendChild(script);
+                });
+
+                if (vgdUrl) {
+                    setShortUrl(vgdUrl);
+                    await executeCopy(vgdUrl);
+                    return;
                 }
 
-                // 通道 3：原生支援 CORS 的 da.gd 短網址服務（直接 301 跳轉、無預覽確認頁）
-                const dagdRes = await fetch(`https://da.gd/s?url=${encodeURIComponent(rawUrl)}`);
-                if (dagdRes.ok) {
-                    const text3 = (await dagdRes.text()).trim();
-                    if (text3.startsWith("http")) {
-                        setShortUrl(text3);
-                        return;
-                    }
-                }
-
-                throw new Error("所有縮網址通道暫時無回應");
+                throw new Error("縮網址服務暫時無回應");
             } catch (err) {
                 console.error("Shorten URL error:", err);
-                alert("縮網址服務暫時忙碌中，請稍後再試！");
+                alert("縮網址失敗，請確認網址格式是否正確，或稍後再試！");
             } finally {
                 setIsShortening(false);
             }
         };
-
+    
     // --- v2.0.0 新增：輸出/複製 Excel 範本 ---
     const handleExportTemplateExcel = () => {
         const bookCol = `BookScore(${month})`;
